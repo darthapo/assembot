@@ -1,0 +1,15 @@
+{
+  "name": "assembot",
+  "version": "0.0.1",
+  "license": "MIT",
+  "description": "Simple asset assembly bot for compiling/combining client-side js and css files.",
+  "author": "Matt McCray <matt@elucidata.net>",
+  "main": "./lib/builder.js",
+  "bin" : { 
+    "assembot" : "./bin/assembot"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": ""
+}
