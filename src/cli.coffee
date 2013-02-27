@@ -3,37 +3,34 @@
 ###
 
 path= require 'path'
+_= require './util'
 assbot= require './builder'
-
-default_conf=
-  "public/app.js":
-    source: './source'
-    ident: 'public'
-  "public/theme.css":
-    source: './source'
-
-default_opts=
-  coffee:
-    bare: yes
-
+defaults= require './defaults'
 
 # TODO: Look for -s to run server, or -w to watch for file changes
 
 module.exports=
   run: ->
-    here= process.cwd()
+    project_root= process.cwd()
+    options= {} # TODO: grab options from cmdline
+    options= _.defaults options, defaults.options
+    assembot_info= require '../package'
+
     nfo= try
-      require "#{here}#{path.sep}package"
+      require "#{project_root}#{path.sep}package"
     catch ex
       console.log "No 'package.json' file found, using defaults!"
       empty=
-        assembot: default_conf
+        assembot: defaults.assembot
 
     assbot_conf= unless nfo.assembot?
       console.log "No 'assembot' block in your package.json file found, using defaults!"
-      default_conf
+      defaults.assembot
     else
       nfo.assembot
-      
-    assbot.build assbot_conf
+    # _.defaults assbot_conf, defaults.config
+    assbot_conf.package= nfo
+    assbot_conf.assembot= assembot_info
+    # console.log assbot_conf
+    assbot.build assbot_conf, options
       

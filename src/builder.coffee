@@ -6,112 +6,128 @@ path= require 'path'
 fs= require 'fs'
 {puts, print, inspect}= require 'util'
 pp= (obj)-> puts inspect obj
-
+defaults= require './defaults'
+_= require './util'
+converter= require './converter'
 project_root= process.cwd()
+uglify= try
+  converter.tryRequire("uglify-js")
+catch ex
+  null
 
-api=
+
+
+module.exports= api=
 
   build: (info, opts={})->
     puts "ASSEMBOT ACTIVATE!"
     for output, config of info
-      config.output_path= output
-      config.output = path.resolve(output)
-      output_ext= path.extname(output)
-      if output_ext is '.js'
-        build_js config, opts
-      else if output_ext is '.css'
-        build_css config, opts
-      else
+      _.extend config, opts
+      _.defaults config, defaults.config
+      src= config.source
+      config.package= info.package
+      config.assembot= info.assembot
+      config.options= opts
+      config.projectRoot= project_root
+      if src?
+        config.source=
+          target: src
+          path: path.resolve(src) 
+          dir: "#{path.resolve(src)}#{path.sep}"
+        config.output=
+          target: output
+          path: path.resolve(output)
+          ext: path.extname(output)
+          dir: path.dirname(path.resolve(output))
+
+      # puts "CONFIG"
+      # pp config
+
+      if config.output.ext is '.js'
+        print " - #{ config.output.target }... Assembling... "
+        assemble_files 'js', config, (err, js_tree)->
+          output_content= build_js_package js_tree, config
+          fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
+          # TODO: Add support for sourcemaps...
+          if config.minify
+            if uglify?
+              print "Minify..."
+              output_content= try
+                switch config.minify
+                  when 1, 'minify', 'min'
+                    uglify.minify( output_content, fromString: true, mangle:false ).code
+                  when 2, 'mangle', 'munge', 'compress'
+                    uglify.minify( output_content, fromString: true, mangle:true ).code
+                  else
+                    output_content
+              catch ex
+                print "Error in minify, skipping... "
+                output_content
+            else
+              print "(can't minify, install uglify-js)..."
+
+          # Add header...?
+          if config.header
+            output_content= "#{converter.replaceTokens(config.header, config)}\n#{output_content}"
+
+          fs.writeFileSync config.output.path, output_content, 'utf8'
+          print "Done!\n"
+      
+      else if config.output.ext is '.css'
+        print " - #{ config.output.target }... Assembling... "
+        assemble_files 'css', config, (err, css_tree)->
+          output_content= build_css_package css_tree, config
+          fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
+          if config.header
+            output_content= "#{converter.replaceTokens(config.header, config)}\n#{output_content}"
+          fs.writeFileSync config.output.path, output_content, 'utf8'
+          print "Done!\n"
+      
+      else if output isnt 'package' and output isnt 'assembot'
         puts "Output file extension must either be .js or .css!"
+        pp output
+        pp config
 
   server: (info)->
     @
 
+  # deprecated:
   jsConverter: (type, converter)->
-    etype= ".#{type}"
-    js_types.push etype
-    js_converters[etype]= converter
+    converter.addFor 'js', type, converter
     @
-
   cssConverter: (type, converter)->
-    etype= ".#{type}"
-    css_types.push etype
-    css_converters[etype]= converter
+    converter.addFor 'css', type, converter
     @
 
 
-
-converters=
-  js:
-    types: []
-    handlers: {}
-  css:
-    types: []
-    handlers: {}
-
-js_types= []
-css_types= []
-
-js_converters= {}
-css_converters= {}
-
-build_js= (info, opts)->
-  print " - #{ info.output_path }... "
-  src_path= path.resolve info.source
+assemble_files= (type, info, callback)->
+  src_path= info.source.path
   src_dir= "#{ src_path }#{ path.sep }"
   pkg_list= []
-  js_output={}
-  walk src_path, (file, fullpath)->
+  output={}
+  _.walkTree src_path, (file, fullpath)->
     ext= path.extname file
-    if js_types.indexOf(ext) >= 0
+    if converter.validTypeFor type, ext
       pkg_list.push fullpath 
   build_count= 0
   for fullpath in pkg_list
     file= path.basename(fullpath)
     ext= path.extname(fullpath)
-    jspath= fullpath.replace(src_dir, '').replace(ext, '')
-    file_info= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:jspath
-    get_js file_info, (js)->
+    libpath= fullpath.replace(src_dir, '').replace(ext, '')
+    file_info= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:libpath
+    converter.buildSourceFor type, fullpath, info, (err, converted_source)->
       build_count += 1
-      js_output[file_info.path]= js
+      output[file_info.path]= converted_source
       if build_count == pkg_list.length
-        output_content= build_js_package js_output
-        outdir= path.dirname info.output
-        fs.mkdirSync outdir unless fs.existsSync outdir
-        fs.writeFileSync info.output, output_content, 'utf8'
-        print "Done!\n"
-
-build_css= (info, opts)->
-  print " - #{ info.output_path }... "
-  src_path= path.resolve info.source
-  src_dir= "#{ src_path }#{ path.sep }"
-  pkg_list= []
-  css_output={}
-  walk src_path, (file, fullpath)->
-    ext= path.extname file
-    if css_types.indexOf(ext) >= 0
-      pkg_list.push fullpath 
-  build_count= 0
-  for fullpath in pkg_list
-    file= path.basename(fullpath)
-    ext= path.extname(fullpath)
-    csspath= fullpath.replace(src_dir, '').replace(ext, '')
-    file_info= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:csspath
-    get_css file_info, (js)->
-      build_count += 1
-      css_output[file_info.path]= js
-      if build_count == pkg_list.length
-        output_content= build_css_package css_output
-        outdir= path.dirname info.output
-        fs.mkdirSync outdir unless fs.existsSync outdir
-        fs.writeFileSync info.output, output_content, 'utf8'
-        print "Done!\n"
+        callback null, output
+  pkg_list
 
 
 build_js_package= (sources, opts={})->
-  identifier= opts.ident ? 'require' 
+  identifier= (opts.ident or opts.options.ident) ? 'require' 
+  autoStart= (opts.autoStart or opts.options.autoStart) ? false
   result = """
-    (function(/*! Stitch !*/) {
+    (function(/*! Stitched by Assembot !*/) {
       if (!this.#{identifier}) {
         var modules = {}, cache = {}, require = function(name, root) {
           var path = expand(root, name), module = cache[path], fn;
@@ -178,6 +194,9 @@ build_js_package= (sources, opts={})->
   result += """
     });\n
   """
+  result += "this.#{identifier}('#{autoStart}');\n" if autoStart
+
+  result
 
 build_css_package= (sources, opts={})->
   results= ""
@@ -187,119 +206,3 @@ build_css_package= (sources, opts={})->
     results += "\n\n"
   results
 
-
-# Default JS converters
-api.jsConverter 'js', (source, opts, converted)->
-  converted source
-
-api.jsConverter 'html', (source, opts, converted)->
-  output= eco.precompile source
-  converted """module.exports=#{JSON.stringify source};"""
-
-try_require= (name)->
-  # This may only be needed when using npm link, I'm not sure.
-  try
-    require name
-  catch ex
-    require "#{project_root}/node_modules/#{name}"
-
-try
-  coffee= try_require 'coffee-script'
-  api.jsConverter 'coffee', (source, opts, converted)->
-    opts = opts.coffee || {}
-    opts.bare= yes
-    output= coffee.compile source, opts
-    converted output
-  api.jsConverter 'litcoffee', (source, opts, converted)->
-    opts = opts.coffee || {}
-    opts.literate= yes
-    opts.bare= yes
-    output= coffee.compile source, opts
-    converted output
-catch ex
-  api.jsConverter 'coffee', -> throw "The 'coffee-script' module cannot be found!"
-  api.jsConverter 'litcoffee', -> throw "The 'coffee-script' module cannot be found!"
-
-try
-  eco= try_require 'eco'
-  api.jsConverter 'eco', (source, opts, converted)->
-    output= eco.precompile source
-    converted output
-catch ex
-  api.jsConverter 'eco', -> throw "The 'eco' module cannot be found!"
-
-# TODO: Add default converters for: json(?), yaml(?), ejs, handlebars
-
-# Default CSS converters
-api.cssConverter 'css', (source, opts, converted)->
-  converted source
-
-try
-  less= try_require 'less'
-  api.jsConverter 'less', (source, opts, converted)->
-    output= less.precompile source
-    converted output
-catch ex
-  api.jsConverter 'less', -> throw "The 'less' module cannot be found!"
-  # puts "LessCSS disabled"
-
-try
-  stylus= try_require 'stylus'
-  nib= try_require 'nib'
-  ## USE NIB TOO!
-  api.cssConverter 'styl', (source, opts, converted)->
-    stylus(source)
-      .set('filename', opts.filename || 'generated.css')
-      .set('paths', [opts.loadpath])
-      .use(nib)
-      .render (err, css)->
-        throw err if err?
-        converted css
-catch ex
-  api.cssConverter 'styl', -> throw "The 'stylus' or 'nib' module cannot be found!"
-  # puts "Stylus/Nib disabled"
-
-get_js= (opts, callback)->
-  source= fs.readFileSync opts.fullpath, 'utf8'
-  converter= js_converters[opts.ext]
-  converter String(source), opts, callback
-
-get_css= (opts, callback)->
-  source= fs.readFileSync opts.fullpath, 'utf8'
-  converter= css_converters[opts.ext]
-  converter String(source), opts, callback
-
-walk= (dir, action)->
-  file_list= fs.readdirSync dir
-  for filename in file_list
-    fullpath= [dir, filename].join path.sep
-    stat= fs.statSync fullpath
-    if stat.isDirectory()
-      # Dive into the directory
-      walk fullpath, action
-    else
-      # Call the action
-      action filename, fullpath
-
-
-_extend= (obj)->
-  for source in Array::slice.call(arguments, 1)
-    if source
-      for key,value of source
-        obj[key]= value
-  obj
-      
-  
-_defaults= (obj)->
-  for source in Array::slice.call(arguments, 1)
-    if source
-      for key,value of source
-        unless obj[key]?
-          obj[key]= value
-  obj
-
-
-module.exports= api
-
-module.exports.extend= _extend
-module.exports.defaults= _defaults
