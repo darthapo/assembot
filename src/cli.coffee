@@ -13,6 +13,7 @@ optparse = require 'optparse'
 module.exports=
   run: ->
     command= 'help'
+    buildTo= source:null, js:null, css:null
     project_root= process.cwd()
     options= _.extend {}, defaults.options
     assembot_info= require '../package'
@@ -26,8 +27,13 @@ module.exports=
       ['-r', '--root [PATH]', 'Set dev server root path']
       ['-m', '--minify [LEVEL]', 'Force minification 0=none 1=minify 2=mangle']
       ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
+      ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
       ['-v', '--version', 'Shows version number']
       ['-h', '--help', 'Shows help']
+      [      '--source [PATH]', 'Set source folder']
+      [      '--js [PATH]', 'Export js package from source']
+      [      '--css [PATH]', 'Export jcss package from source']
+      # [      '--out', 'Build to STDOUT']
     ]
 
     parser.banner = 'Usage: assembot [options]';
@@ -47,6 +53,11 @@ module.exports=
         options.wwwRoot= newRoot
       else
         _.log "Not a valid path: #{ newRoot }"
+    parser.on 'source',  (name, value)-> 
+      command= name
+      buildTo.source= value
+    parser.on 'js',      (name, value)-> buildTo[name]= value
+    parser.on 'css',     (name, value)-> buildTo[name]= value
     parser.on '*',       (name, value)-> _.puts "Unknown option: #{name}"
 
     parser.parse process.argv
@@ -86,6 +97,15 @@ module.exports=
 
     else if command is 'version'
       _.puts assembot_info.version
+
+    else if command is 'source'
+      config={}
+      if buildTo.js?
+        config[buildTo.js]= _.extend {}, defaults.config, source:buildTo.source
+      if buildTo.css?
+        config[buildTo.css]= _.extend {}, defaults.config, source:buildTo.source
+        builder.build config, options
+
 
     else
       _.puts """

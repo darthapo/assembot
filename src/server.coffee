@@ -11,11 +11,6 @@ getConfigFor= (path, info)->
       return config if config.output.path is path
 
 exports.serve= (config, opts={})->
-  # try
-  #   builder.build config, opts
-  # catch ex
-  #   _.log "build error"
-  #   _.log ex
   puts "Setting up dev server..."
   targets= builder.buildTargets(config, yes)
   app= express()
