@@ -96,10 +96,8 @@ addConvertor= (target, type, modules, handler)->
     # Could not load requirement
     api.addFor target, type, -> throw "Module(s) '#{ modules.join "'"}' cannot be found!"
 
-addJsConvertor= (type, modules, handler)->
-  addConvertor 'js', type, modules, handler
-addCssConvertor= (type, modules, handler)->
-  addConvertor 'css', type, modules, handler
+addJsConvertor= (type, modules, handler)-> addConvertor 'js', type, modules, handler
+addCssConvertor= (type, modules, handler)-> addConvertor 'css', type, modules, handler
 
 
 # Default JS converters
@@ -117,7 +115,6 @@ addJsConvertor '.coffee', 'coffee-script', (coffee)->
     opts.bare ?= yes
     output= coffee.compile source, opts
     converted null, output, opts
-
 
 addJsConvertor '.litcoffee', 'coffee-script', (coffee)-> 
   (source, opts, converted)->
@@ -146,8 +143,9 @@ addCssConvertor '.css', [], ->
 
 addCssConvertor '.less', 'less', (less)-> 
   (source, opts, converted)->
-    output= less.precompile source
-    converted null, output, opts
+    less.render source, (err, css)->
+      converted err, null, opts if err?
+      converted null, css, opts
 
 addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)->
   load_paths= [process.cwd(), path.dirname(__dirname)]
@@ -155,7 +153,7 @@ addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)->
     stylus(source)
       .set('filename', opts.current_file.filename || 'generated.css')
       .set('paths', load_paths)
-      .use(nib)
+      .use(nib())
       .render (err, css)->
         if err?
           converted err, null, opts
