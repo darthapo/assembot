@@ -1,4 +1,4 @@
-
+_= require './util'
 
 exports.config=
   source: './source'
@@ -6,7 +6,7 @@ exports.config=
   autoStart: no
   minify: 0 # 0=none, 1=minify, 2=mangle
   sourceMap: no # still a work in progress
-  header: "/* Assembled by Assembot {%- assembot.version -%} */"
+  header: "/* Assembled by AssemBot {%- assembot.version -%} */"
   replaceTokens: yes
   coffee:
     bare: yes
@@ -19,6 +19,6 @@ exports.options=
 
 
 exports.assembot=
-  "public/app.js": exports.config
-  "public/theme.css": exports.config
+  "public/app.js": _.extend {}, exports.config
+  "public/theme.css": _.extend {}, exports.config
 

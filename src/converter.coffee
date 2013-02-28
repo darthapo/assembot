@@ -3,6 +3,13 @@ fs= require 'fs'
 _= require './util'
 project_root= process.cwd()
 
+assembot_package= require '../package'
+project_package= try
+    require "#{project_root}#{path.sep}package"
+  catch ex
+    {}
+
+
 type_db=
   ".js":
     types: []
@@ -49,12 +56,17 @@ module.exports= api=
     if info.replaceTokens and @tokenParser.test(string)
       string.replace @tokenParser, (match, token, value, loc, src)->
         data= info
-        for part in value.split('.')
-          key= part.trim()
-          if key is 'NOW'
-            data= new Date()
+        parts= value.split('.')
+        first_part= parts.shift().trim()
+        switch first_part
+          when 'package' then data= project_package
+          when 'assembot' then data= assembot_package
+          when 'NOW' then data= new Date()
           else
-            data= data[key]
+            data= info[first_part]
+        for part in parts
+          key= part.trim()
+          data= data[key]
         String(data)
     else
       string
@@ -137,11 +149,12 @@ addCssConvertor '.less', 'less', (less)->
     output= less.precompile source
     converted null, output, opts
 
-addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)-> 
+addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)->
+  load_paths= [process.cwd(), path.dirname(__dirname)]
   (source, opts, converted)->
     stylus(source)
-      .set('filename', opts.filename || 'generated.css')
-      .set('paths', [opts.loadpath])
+      .set('filename', opts.current_file.filename || 'generated.css')
+      .set('paths', load_paths)
       .use(nib)
       .render (err, css)->
         if err?

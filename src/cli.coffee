@@ -19,19 +19,25 @@ module.exports=
     parser = new optparse.OptionParser [
       ['-b', '--build', 'Run build']
       ['-s', '--serve', 'Run dev server']
+      ['-f', '--files', 'Shows the build targets and associated files']
+      ['-d', '--debug', 'Shows internal build config data']
       ['-p', '--port [PORT]', "Set dev server port"]
+      ['-m', '--minify [LEVEL]', 'Force minification 0=none 1=minify 2=mangle']
+      ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
       ['-v', '--version', 'Shows version number']
       ['-h', '--help', 'Shows help']
-      ['-m', '--minify [LEVEL]', 'Force minification 0=none 1=minify 2=mangle']
     ]
 
     parser.banner = 'Usage: assembot [options]';
 
     parser.on 'build',   (name, value)-> command= name
     parser.on 'help',    (name, value)-> command= name
-    parser.on 'serve',   (name, value)-> command= name
-    parser.on 'port',    (name, value)-> options.port= value
+    parser.on 'debug',   (name, value)-> command= name
+    parser.on 'files',   (name, value)-> command= name
     parser.on 'minify',  (name, value)-> options.minify= parseInt value || "1"
+    parser.on 'modules', (name, value)-> command= name
+    parser.on 'port',    (name, value)-> options.port= value
+    parser.on 'serve',   (name, value)-> command= name
     parser.on 'version', (name, value)-> command= name
     parser.on '*',       (name, value)-> _.puts "Unknown option: #{name}"
 
@@ -42,23 +48,33 @@ module.exports=
     catch ex
       console.log "No 'package.json' file found, using defaults!"
       empty=
-        assembot: defaults.assembot
+        assembot: _.extend {}, defaults.assembot
 
     assbot_conf= unless nfo.assembot?
       console.log "No 'assembot' block in your package.json file found, using defaults!"
-      defaults.assembot
+      _.extend {}, defaults.assembot
     else
       nfo.assembot
 
-    assbot_conf.package= nfo
-    assbot_conf.assembot= assembot_info
-    assbot_conf.options= options
+    # assbot_conf.package= nfo
+    # assbot_conf.assembot= assembot_info
+    # assbot_conf.options= options
 
     if command is 'serve'
       server.serve assbot_conf, options
 
     else if command is 'build'
       builder.build assbot_conf, options
+
+    else if command is 'files'
+      builder.displayTargetTree assbot_conf, options
+
+    else if command is 'modules'
+      builder.displayModuleTree assbot_conf, options
+
+    else if command is 'debug'
+      builder.prepConfig assbot_conf, options
+      _.pp assbot_conf
 
     else if command is 'version'
       _.puts assembot_info.version

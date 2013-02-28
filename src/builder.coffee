@@ -6,11 +6,6 @@ converter= require './converter'
 project_root= process.cwd()
 uglify=  require "uglify-js"
 
-# uglify= try
-#   _.tryRequire("uglify-js")
-# catch ex
-#   null
-
 do_minify= (output_content, config)->
   if config.minify
     if uglify?
@@ -79,16 +74,13 @@ module.exports= api=
 
 
   prepConfig: (info, opts={})->
-    return if info.__prepped? and info.__prepped is true
     for output, config of info
       _.extend config, opts
       _.defaults config, defaults.config
-      config.package= info.package
-      config.assembot= info.assembot
-      config.options= opts
+      config.type= 'meta'
       config.projectRoot= project_root
       src= config.source
-      if src?
+      if src? and typeof src is 'string'
         config.source=
           target: src
           path: path.resolve(src) 
@@ -102,9 +94,7 @@ module.exports= api=
           sourceMapName: "#{ path.basename(output) }.map"
           sourceMapPath: "#{ path.resolve(output) }.map"
         config.type= config.output.ext
-      else
-        config.type= 'meta'
-    info.__prepped= true
+    # _.pp info
     info
 
   buildTarget: (config, callback)->
@@ -139,6 +129,35 @@ module.exports= api=
     @prepConfig info, opts
     for output, config of info
       @buildTarget config
+
+  displayTargetTree: (info, opts={})->
+    _.puts "ASSEMBOT ACTIVATE!"
+    @prepConfig info, opts
+    for output, config of info
+      # unless config.type is 'meta'
+      _.puts ""
+      _.puts output
+      src_dir= path.dirname config.source.path
+      _.walkTree config.source.path, (file, fullpath)->
+        ext= path.extname file
+        if converter.validTypeFor config.type, ext
+          _.puts "  #{path.relative(src_dir, fullpath)}"
+    _.puts ""
+
+  displayModuleTree: (info, opts={})->
+    _.puts "ASSEMBOT ACTIVATE!"
+    @prepConfig info, opts
+    for output, config of info
+      # unless config.type is 'meta'
+      if config.type is '.js'
+        _.puts ""
+        _.puts "#{ config.ident }  (in #{output})"
+        src_dir= path.dirname config.source.path
+        _.walkTree config.source.path, (file, fullpath)->
+          ext= path.extname file
+          if converter.validTypeFor config.type, ext
+            _.puts "  #{path.relative(config.source.path, fullpath).replace(ext, '')}"
+    _.puts ""
 
 
 filelistForType= (type, path, callback)->
@@ -175,8 +194,8 @@ assemble_files= (type, info, callback)->
 
 
 build_js_package= (sources, opts={})->
-  identifier= (opts.ident or opts.options.ident) ? 'require' 
-  autoStart= (opts.autoStart or opts.options.autoStart) ? false
+  identifier= opts.ident ? 'require' 
+  autoStart= opts.autoStart ? false
   result = """
     (function(/*! Stitched by Assembot !*/) {
       if (!this.#{identifier}) {

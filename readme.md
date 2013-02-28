@@ -4,7 +4,7 @@
 
 AssemBot is a simple asset assembler for use in developing JS web apps. It's designed for my own preferred way of development, so YMMV.
 
-It's rather like stitch, but not exactly. It compiles an entire directory into a single, commonjs moduled, javascript file. It will also create a single .css file from all the styles in a single directory. It will transpile where appropriate (CoffeeScript, eco, less, stylus).
+It's rather like stitch, but not exactly. It compiles an entire directory into a single, commonjs moduled, javascript file. It will also create a single .css file from all the styles in a single directory, recursively. It will transpile where appropriate (CoffeeScript, eco, less, stylus).
 
 If you don't like the default conventions, you can configure it in your `package.json` file.
 
@@ -19,7 +19,7 @@ You don't **have** to install it globally, but it comes with a pre-configured bi
 At it's simplest:
 
     cd my_project
-    assembot
+    assembot --build
 
 If you want to configure it via package.json, just add an `assembot` section to your package and run `assembot`.
 
@@ -38,18 +38,31 @@ If you want to configure it via package.json, just add an `assembot` section to 
 If you've not installed it globally, then you'll need to add it as a dependency to your project, then:
 
     npm install
-    ./node_modules/.bin/assembot
+    ./node_modules/.bin/assembot --build
 
 
 ## Transpiler Support
 
-Assembot will try to enable support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.less`, and `.styl` files. It will also assemble `.css`, `.js`, and `.html` files. Any `.html` files become a module that exports the contents of the file as a string. Stylus support will attempt to enable Nib by default as well.
+AssemBot will try to enable support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.less`, and `.styl` files. It will also assemble `.css`, `.js`, and `.html` files. Any `.html` files become a module that exports the contents of the file as a string. Stylus support will attempt to enable Nib by default as well.
 
 ## Token Replacement
 
 In your sources files you can embed data defined in your `package.json` file by using a special token syntax: `{%- package.author -%}`
 
-If you have `replaceTokens` set to `true`, Assembot will attempt to replace all tokens in your sources files. It is enabled by default.
+If you have `replaceTokens` set to `true`, AssemBot will attempt to replace all tokens in your sources files. It is enabled by default.
+
+## Dev Server
+
+AssemBot comes with a dev server, to use it:
+
+    assembot --serve
+
+
+## Command Line Help
+
+You can get a list of the supported command line options too:
+
+    assembot -h
 
 ## Default Configuration
 
@@ -62,7 +75,8 @@ exports.config=
   ident: 'require'
   autoStart: no
   minify: 0 # 0=none, 1=minify, 2=mangle
-  header: "/* Assembled by Assembot {%- assembot.version -%} */"
+  sourceMap: no # still a work in progress
+  header: "/* Assembled by AssemBot {%- assembot.version -%} */"
   replaceTokens: yes
   coffee:
     bare: yes

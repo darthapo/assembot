@@ -8,3 +8,6 @@ watch:
 push:
 	git push dropbox
 	git push github
+
+publish:
+	npm publish
