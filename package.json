@@ -14,13 +14,17 @@
   "engines": {
     "node": ">=0.8"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darthapo/assembot.git"
+  },
   "dependencies": {
     "coffee-script": "~1.5.0",
     "eco": "~1.1.0-rc-3",
     "stylus": "~0.32.0",
     "nib": "~0.9.1",
     "uglify-js": "~2.2.5",
-    "express": "~3.1.0"
+    "express": "~3.1.0",
+    "optparse": "~1.0.4"
   }
 }

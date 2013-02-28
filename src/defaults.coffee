@@ -5,6 +5,7 @@ exports.config=
   ident: 'require'
   autoStart: no
   minify: 0 # 0=none, 1=minify, 2=mangle
+  sourceMap: no # still a work in progress
   header: "/* Assembled by Assembot {%- assembot.version -%} */"
   replaceTokens: yes
   coffee:

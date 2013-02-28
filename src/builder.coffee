@@ -1,34 +1,93 @@
-###
-Assembot! v0.0.1
-###
-
 path= require 'path'
 fs= require 'fs'
-{puts, print, inspect}= require 'util'
-pp= (obj)-> puts inspect obj
 defaults= require './defaults'
 _= require './util'
 converter= require './converter'
 project_root= process.cwd()
-uglify= try
-  converter.tryRequire("uglify-js")
-catch ex
-  null
+uglify=  require "uglify-js"
 
+# uglify= try
+#   _.tryRequire("uglify-js")
+# catch ex
+#   null
 
+do_minify= (output_content, config)->
+  if config.minify
+    if uglify?
+      _.log "Minify... (#{ config.output.target })"
+      try
+        settings= fromString: true, mangle:false
+        settings.outSourceMap= config.output.sourceMapName if config.sourceMap
+        switch config.minify
+          when 1, 'minify', 'min'
+            uglify.minify( output_content, settings )
+          when 2, 'mangle', 'munge', 'compress'
+            settings.mangle= true
+            uglify.minify( output_content, settings )
+          else
+            code:output_content, map:null
+      catch ex
+        _.log "Error in minify, skipping... (#{ config.output.target })"
+        code:output_content, map:null
+    else
+      _.log "Can't minify (install uglify-js) (#{ config.output.target })"
+      code:output_content, map:null
+  else
+    code:output_content, map:null
+
+do_header= (output_content, config)->
+  if config.header
+    "#{converter.replaceTokens(config.header, config)}\n#{output_content}"
+  else
+    output_content
+
+outputTargets= (info)->
+  targets=[]
+  for output, config of info
+    ext= path.extname(output)
+    targets.push( output ) if ext is '.js' or ext is '.css'
+  targets
 
 module.exports= api=
 
-  build: (info, opts={})->
-    puts "ASSEMBOT ACTIVATE!"
+  buildTargets: (config, resolvePaths=no)->
+    @prepConfig(config)
+    targets= outputTargets(config)
+    if resolvePaths
+      targetsFP= []
+      for target in targets
+        targetsFP.push path.resolve(target)
+      targetsFP
+    else
+      targets
+
+  buildPackage: (config, callback)->
+    _.log "Assembling... (#{ config.output.target })"
+    target= config.type
+    try
+      assemble_files target, config, (err, src_tree)->
+        output_content= if target is '.js' 
+          build_js_package src_tree, config
+        else
+          build_css_package src_tree, config
+        minified= do_minify(output_content, config)
+        output_content= minified.code
+        output_content= do_header(output_content, config)
+        callback null, output_content, minified.map
+    catch ex
+      callback ex, null, null
+
+
+  prepConfig: (info, opts={})->
+    return if info.__prepped? and info.__prepped is true
     for output, config of info
       _.extend config, opts
       _.defaults config, defaults.config
-      src= config.source
       config.package= info.package
       config.assembot= info.assembot
       config.options= opts
       config.projectRoot= project_root
+      src= config.source
       if src?
         config.source=
           target: src
@@ -36,68 +95,59 @@ module.exports= api=
           dir: "#{path.resolve(src)}#{path.sep}"
         config.output=
           target: output
+          name: path.basename(output)
           path: path.resolve(output)
           ext: path.extname(output)
           dir: path.dirname(path.resolve(output))
+          sourceMapName: "#{ path.basename(output) }.map"
+          sourceMapPath: "#{ path.resolve(output) }.map"
+        config.type= config.output.ext
+      else
+        config.type= 'meta'
+    info.__prepped= true
+    info
 
-      # puts "CONFIG"
-      # pp config
+  buildTarget: (config, callback)->
+    if config.type is '.js'
+      @buildPackage config, (err, output, source_map)->
+        throw err if err?
+        if callback?
+          callback(err, output, source_map)
+          return
+        fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
+        if source_map? and config.sourceMap
+          _.log "SourceMap... (#{ config.output.target })"
+          fs.writeFileSync config.output.sourceMapPath, source_map, 'utf8'
+          output += "\n//@ sourceMappingURL=#{config.output.sourceMapName}"
+          #console.log source_map
+        
+        fs.writeFileSync config.output.path, output, 'utf8'
+        _.log "Wrote: #{ config.output.target }\n"
+    
+    else if config.type is '.css'
+      @buildPackage config, (err, output)->
+        throw err if err?
+        if callback?
+          callback(err, output)
+          return
+        fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
+        fs.writeFileSync config.output.path, output, 'utf8'
+        _.log "Wrote: #{ config.output.target }\n"
 
-      if config.output.ext is '.js'
-        print " - #{ config.output.target }... Assembling... "
-        assemble_files 'js', config, (err, js_tree)->
-          output_content= build_js_package js_tree, config
-          fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
-          # TODO: Add support for sourcemaps...
-          if config.minify
-            if uglify?
-              print "Minify..."
-              output_content= try
-                switch config.minify
-                  when 1, 'minify', 'min'
-                    uglify.minify( output_content, fromString: true, mangle:false ).code
-                  when 2, 'mangle', 'munge', 'compress'
-                    uglify.minify( output_content, fromString: true, mangle:true ).code
-                  else
-                    output_content
-              catch ex
-                print "Error in minify, skipping... "
-                output_content
-            else
-              print "(can't minify, install uglify-js)..."
+  build: (info, opts={})->
+    _.puts "ASSEMBOT ACTIVATE!"
+    @prepConfig info, opts
+    for output, config of info
+      @buildTarget config
 
-          # Add header...?
-          if config.header
-            output_content= "#{converter.replaceTokens(config.header, config)}\n#{output_content}"
 
-          fs.writeFileSync config.output.path, output_content, 'utf8'
-          print "Done!\n"
-      
-      else if config.output.ext is '.css'
-        print " - #{ config.output.target }... Assembling... "
-        assemble_files 'css', config, (err, css_tree)->
-          output_content= build_css_package css_tree, config
-          fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
-          if config.header
-            output_content= "#{converter.replaceTokens(config.header, config)}\n#{output_content}"
-          fs.writeFileSync config.output.path, output_content, 'utf8'
-          print "Done!\n"
-      
-      else if output isnt 'package' and output isnt 'assembot'
-        puts "Output file extension must either be .js or .css!"
-        pp output
-        pp config
-
-  server: (info)->
-    @
-
-  # deprecated:
-  jsConverter: (type, converter)->
-    converter.addFor 'js', type, converter
-    @
-  cssConverter: (type, converter)->
-    converter.addFor 'css', type, converter
-    @
+filelistForType= (type, path, callback)->
+  filelist= []
+  _.walkTree path, (file, fullpath)->
+    ext= path.extname file
+    if converter.validTypeFor type, ext
+      filelist.push fullpath 
+  filelist
 
 
 assemble_files= (type, info, callback)->
@@ -114,10 +164,11 @@ assemble_files= (type, info, callback)->
     file= path.basename(fullpath)
     ext= path.extname(fullpath)
     libpath= fullpath.replace(src_dir, '').replace(ext, '')
-    file_info= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:libpath
+    info.current_file= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:libpath
     converter.buildSourceFor type, fullpath, info, (err, converted_source)->
+      throw err if err?
       build_count += 1
-      output[file_info.path]= converted_source
+      output[info.current_file.path]= converted_source
       if build_count == pkg_list.length
         callback null, output
   pkg_list

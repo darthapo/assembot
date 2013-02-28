@@ -48,11 +48,13 @@ module.exports= api=
   replaceTokens: (string, info)->
     if info.replaceTokens and @tokenParser.test(string)
       string.replace @tokenParser, (match, token, value, loc, src)->
-        # console.log "MATCHED:", value
         data= info
         for part in value.split('.')
           key= part.trim()
-          data= data[key]
+          if key is 'NOW'
+            data= new Date()
+          else
+            data= data[key]
         String(data)
     else
       string
@@ -69,7 +71,15 @@ addConvertor= (target, type, modules, handler)->
     for module in modules
       args.push _.tryRequireLocalFirst module
     converter= handler.apply handler, args
-    api.addFor target, type, converter
+    api.addFor target, type, (s,o,c)->
+      try
+        converter(s,o,c)
+      catch ex
+        file= "#{ o.current_file.path }#{ o.current_file.ext }"
+        c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, o
+        # throw new Error("Transpiler error for #{ file }: #{ ex.message }")
+
+
   catch ex
     # Could not load requirement
     api.addFor target, type, -> throw "Module(s) '#{ modules.join "'"}' cannot be found!"
@@ -95,6 +105,7 @@ addJsConvertor '.coffee', 'coffee-script', (coffee)->
     opts.bare ?= yes
     output= coffee.compile source, opts
     converted null, output, opts
+
 
 addJsConvertor '.litcoffee', 'coffee-script', (coffee)-> 
   (source, opts, converted)->

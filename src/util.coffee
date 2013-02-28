@@ -2,6 +2,8 @@ util= require 'util'
 fs= require 'fs'
 path= require 'path'
 
+exports.pp= (obj)-> util.puts util.inspect obj
+
 exports.extend= (obj)->
   for source in Array::slice.call(arguments, 1)
     if source
