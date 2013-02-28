@@ -21,7 +21,7 @@ exports.serve= (config, opts={})->
   app= express()
   port= config.port || opts.port || 8080
   project_root= process.cwd()
-  root= path.resolve (config.wwwRoot || "#{ project_root }/public")
+  root= path.resolve (opts.wwwRoot || config.wwwRoot || "#{ project_root }/public")
   puts "  root: #{root}"
   puts "  port: #{port}"
 

@@ -3,6 +3,7 @@
 ###
 
 path= require 'path'
+fs= require 'fs'
 _= require './util'
 builder= require './builder'
 server= require './server'
@@ -22,6 +23,7 @@ module.exports=
       ['-f', '--files', 'Shows the build targets and associated files']
       ['-d', '--debug', 'Shows internal build config data']
       ['-p', '--port [PORT]', "Set dev server port"]
+      ['-r', '--root [PATH]', 'Set dev server root path']
       ['-m', '--minify [LEVEL]', 'Force minification 0=none 1=minify 2=mangle']
       ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
       ['-v', '--version', 'Shows version number']
@@ -39,6 +41,12 @@ module.exports=
     parser.on 'port',    (name, value)-> options.port= value
     parser.on 'serve',   (name, value)-> command= name
     parser.on 'version', (name, value)-> command= name
+    parser.on 'root',    (name, value)-> 
+      newRoot= path.resolve(value)
+      if fs.existsSync newRoot
+        options.wwwRoot= newRoot
+      else
+        _.log "Not a valid path: #{ newRoot }"
     parser.on '*',       (name, value)-> _.puts "Unknown option: #{name}"
 
     parser.parse process.argv
