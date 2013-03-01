@@ -153,7 +153,7 @@ addJsConvertor ['.coffee', '.litcoffee'], 'coffee-script', (coffee)->
 addJsConvertor '.eco', 'eco', (eco)-> 
   (source, opts, converted)->
     output= eco.precompile source
-    converted null, output, opts
+    converted null, """module.exports= #{output};""", opts
 
 addJsConvertor '.ejs', 'ejs', (ejs)->
   (source, opts, converted)->
