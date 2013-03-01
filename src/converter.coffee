@@ -143,10 +143,9 @@ addJsConvertor '.json', [], ->
 
 addJsConvertor ['.coffee', '.litcoffee'], 'coffee-script', (coffee)-> 
   (source, opts, converted)->
-    options = _.defaults (opts.coffee || {}),
+    options = _.defaults {}, (opts.coffee || {}),
       bare: yes
     options.literate= (opts.current_file.ext is '.litcoffee' || no)
-    # _.pp options
     output= coffee.compile source, options
     converted null, output, opts
 
@@ -162,7 +161,7 @@ addJsConvertor '.ejs', 'ejs', (ejs)->
 
 addJsConvertor '.handlebars', 'handlebars', (handlebars)->
   (source, opts, converted)->
-    options= _.defaults (opts.handlebars || {}),
+    options= _.defaults {}, (opts.handlebars || {}),
       simple: false
       commonjs: true
     output= handlebars.precompile(source, options)
@@ -170,7 +169,7 @@ addJsConvertor '.handlebars', 'handlebars', (handlebars)->
 
 addJsConvertor '.jade', 'jade', (jade)->
   (source, opts, converted)->
-    options= _.defaults (opts.jade || {}),
+    options= _.defaults {}, (opts.jade || {}),
       client: true
       compileDebug: false
     output= jade.compile(source, options)
@@ -178,21 +177,21 @@ addJsConvertor '.jade', 'jade', (jade)->
 
 addJsConvertor '.hogan', 'hogan.js', (hogan)->
   (source, opts, converted)->
-    options= _.defaults (opts.hogan || {}),
+    options= _.defaults {}, (opts.hogan || {}),
       asString: 1
     output= hogan.compile(source, options)
     converted null, """module.exports= new Hogan.Template(#{output.toString()});""", opts
 
 addJsConvertor '.dot', 'doT', (dot)->
   (source, opts, converted)->
-    options= _.defaults (opts.dot || opts.doT || {}), {}
+    options= _.defaults {}, (opts.dot || opts.doT || {}), {}
     output= dot.compile(source, options)
     # _.pp """module.exports= #{ output.toString() }"""
     converted null, """module.exports= #{ output.toString() }""", opts
 
 addJsConvertor ['.md', 'markdown'], 'marked', (marked)->
   (source, opts, converted)->
-    options= _.defaults (opts.dot || opts.doT || {}),
+    options= _.defaults {}, (opts.marked || {}),
       gfm: true
       tables: true
       breaks: false
@@ -219,9 +218,13 @@ addCssConvertor '.less', 'less', (less)->
 addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)->
   load_paths= [process.cwd(), path.dirname(__dirname)]
   (source, opts, converted)->
+    options= _.defaults {}, (opts.marked || {}),
+      filename: opts.current_file.filename || 'generated.css'
+      paths: load_paths
     stylus(source)
       .set('filename', opts.current_file.filename || 'generated.css')
       .set('paths', load_paths)
+      .set(options)
       .use(nib())
       .render (err, css)->
         if err?

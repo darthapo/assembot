@@ -19,8 +19,20 @@ module.exports=
     command= 'help'
     buildTo= source:null, js:null, css:null
     project_root= process.cwd()
-    options= _.extend {}, defaults.options
     assembot_info= require '../package'
+    nfo= try
+      require "#{project_root}#{path.sep}package"
+    catch ex
+      _.puts "No 'package.json' file found, using defaults!"
+      empty=
+        assembot: _.extend {}, defaults.assembot
+    assbot_conf= unless nfo.assembot?
+      _.puts "No 'assembot' block in your package.json file found, using defaults!"
+      _.extend {}, defaults.assembot
+    else
+      nfo.assembot
+    options= _.defaults {}, (assbot_conf.options || {}),  defaults.options
+    delete assbot_conf.options
 
     parser = new optparse.OptionParser [
       ['-b', '--build', 'Run build']
@@ -67,19 +79,6 @@ module.exports=
 
     parser.parse process.argv
 
-    nfo= try
-      require "#{project_root}#{path.sep}package"
-    catch ex
-      console.log "No 'package.json' file found, using defaults!"
-      empty=
-        assembot: _.extend {}, defaults.assembot
-
-    assbot_conf= unless nfo.assembot?
-      console.log "No 'assembot' block in your package.json file found, using defaults!"
-      _.extend {}, defaults.assembot
-    else
-      nfo.assembot
-
     if command is 'serve'
       server.serve assbot_conf, options
 
@@ -109,6 +108,7 @@ module.exports=
         _.puts "package.json already exists."
       else
         _.puts "Creating a default package.json for you..."
+        assembot_conf.options= defaults.options
         template=
           name: path.basename(process.cwd())
           version: "1.0.0"

@@ -203,7 +203,13 @@ build_js_package= (sources, opts={})->
   result = """
     (function(/*! Stitched by Assembot !*/) {
       if (!this.#{identifier}) {
-        var modules = {}, cache = {}, require = function(name, root) {
+        var modules = {}, cache = {}, moduleList= function() {
+          var names= [];
+          for( var name in modules ) {
+            names.push(name);
+          }
+          return names;
+        }, require = function(name, root) {
           var path = expand(root, name), module = cache[path], fn;
           if (module) {
             return module.exports;
@@ -211,9 +217,11 @@ build_js_package= (sources, opts={})->
             module = {id: path, exports: {}};
             try {
               cache[path] = module;
-              fn(module.exports, function(name) {
+              var localRequire= function(name) {
                 return require(name, dirname(path));
-              }, module);
+              }
+              localRequire.modules= moduleList;
+              fn(module.exports, localRequire, module);
               return module.exports;
             } catch (err) {
               delete cache[path];
@@ -248,12 +256,7 @@ build_js_package= (sources, opts={})->
           for (var key in bundle)
             modules[key] = bundle[key];
         };
-        this.#{identifier}.modules= function() {
-          var names= [];
-          for( var name in modules)
-            names.push(name);
-          return names;
-        }
+        this.#{identifier}.modules= moduleList;
       }
       return this.#{identifier}.define;
     }).call(this)({\n
