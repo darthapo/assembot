@@ -1,6 +1,8 @@
 util= require 'util'
 fs= require 'fs'
 path= require 'path'
+spawn= require('child_process').spawn
+exec= require('child_process').exec
 
 exports.pp= (obj)-> util.puts util.inspect obj
 
@@ -34,17 +36,78 @@ exports.walkTree= walk=(dir, callback, files_only=yes)->
   file_list
 
 # This may only be needed when using Assembot with npm link, I'm not sure.
-exports.tryRequire= (name)->
+exports.tryRequire= (name, callback)->
+  # _.log "tryRequire('#{ name }')"
+  callback null, {} if name is null or name is ''
   try
-    require name
+    lib= require name
+    callback null, lib
   catch ex
-    require "#{ process.cwd() }/node_modules/#{name}"
-
-exports.tryRequireLocalFirst= (name)->
-  try
-    require "#{ process.cwd() }/node_modules/#{name}"
-  catch ex
-    require name
+    localRequire name, callback
     
+# exports.tryRequireLocalFirst= (name, callback)->
+#   localRequire name, (err, lib)->
+#     if err?
+#       try
+#         lib= require name
+#         callback null, lib
+#       catch ex
+#         callback ex, null
+#     else
+#       callback null, lib
+
+_= exports
+
+loaded_libs= {}
+loading_now= {}
+
+localRequire= (name, callback)->
+  if loaded_libs[name]?
+    # _.puts "RMOTE LIB CACHE FOR: #{name}"
+    callback(null, loaded_libs[name]) 
+    return
+  # _.puts "Local require #{name}"
+  if loading_now[name]?
+    # _.puts "Adding to load queue (#{name})"
+    loading_now[name].push callback
+    return
+  else
+    loading_now[name]= []
+    loading_now[name].push callback
+
+  # _.puts "LOADING REMOTE LIB (#{name})"
+
+  cmd= "#{process.execPath} -p -e \"require.resolve('#{ name }')\""
+  # _.log cmd
+  child= exec cmd, (stdin, stdout, stderr)->
+    # if stderr isnt ''
+    #   _.log "STDERR OUTPUT!"
+    #   _.pp stderr      
+    libpath= stdout.trim()
+    if libpath is ''
+      err= new Error("Could not load '#{name}' module. (no local path)")
+      for cb in loading_now[name]
+        # _.log " >> error callback (#{name})"
+        cb err, null
+      delete loading_now[name]
+      # callback(new Error("Could not load '#{name}' module. (no local path)"), null) 
+    try
+      # _.log "Loading: #{libpath}"
+      lib= require libpath
+      loaded_libs[name]= lib
+      for cb in loading_now[name]
+        # _.log " >> callback (#{name})"
+        # _.pp cb.toString()
+        cb null, lib
+      delete loading_now[name]
+
+    catch ex
+      # _.log "Exception!"
+      for cb in loading_now[name]
+        # _.log " >> error callback (#{name})"
+        cb ex, null
+      delete loading_now[name]
+      # callback ex, null
+  true
 
 exports.extend exports, util

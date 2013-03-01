@@ -10,6 +10,10 @@ server= require './server'
 defaults= require './defaults'
 optparse = require 'optparse'
 
+process.on 'uncaughtException', (ex)->
+  _.log "DANGER!"
+  _.pp ex
+
 module.exports=
   run: ->
     command= 'help'
@@ -75,10 +79,6 @@ module.exports=
     else
       nfo.assembot
 
-    # assbot_conf.package= nfo
-    # assbot_conf.assembot= assembot_info
-    # assbot_conf.options= options
-
     if command is 'serve'
       server.serve assbot_conf, options
 
@@ -105,7 +105,6 @@ module.exports=
       if buildTo.css?
         config[buildTo.css]= _.extend {}, defaults.config, source:buildTo.source
         builder.build config, options
-
 
     else
       _.puts """

@@ -43,7 +43,7 @@ If you've not installed it globally, then you'll need to add it as a dependency 
 
 ## Transpiler Support
 
-AssemBot will try to enable support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.less`, and `.styl` files. It will also assemble `.css`, `.js`, and `.html` files. Any `.html` files become a module that exports the contents of the file as a string. Stylus support will attempt to enable Nib by default as well.
+AssemBot will try to enable support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.dot`, `.ejs`, `.less`, `.styl` files and more. It will also assemble `.css`, `.js`, and `.html` files. Any `.html` files become a module that exports the contents of the file as a string. Stylus support will attempt to enable Nib by default as well.
 
 ## Token Replacement
 
@@ -103,3 +103,4 @@ exports.assembot=
 ## Todo
 
 - Have it look in other places than just package.json, say: component.json, build.json, assembot.json, etc.
+- Test support for handlebars and other template engines that require a runtime (ugh).

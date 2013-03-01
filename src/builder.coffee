@@ -106,13 +106,13 @@ module.exports= api=
           return
         fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
         if source_map? and config.sourceMap
-          _.log "SourceMap... (#{ config.output.target })"
           fs.writeFileSync config.output.sourceMapPath, source_map, 'utf8'
+          _.log "SourceMap... (#{ config.output.target })"
           output += "\n//@ sourceMappingURL=#{config.output.sourceMapName}"
           #console.log source_map
         
         fs.writeFileSync config.output.path, output, 'utf8'
-        _.log "Wrote: #{ config.output.target }\n"
+        _.log "Wrote: #{ config.output.target }"
     
     else if config.type is '.css'
       @buildPackage config, (err, output)->
@@ -122,7 +122,7 @@ module.exports= api=
           return
         fs.mkdirSync config.output.dir unless fs.existsSync config.output.dir
         fs.writeFileSync config.output.path, output, 'utf8'
-        _.log "Wrote: #{ config.output.target }\n"
+        _.log "Wrote: #{ config.output.target }"
 
   build: (info, opts={})->
     _.puts "ASSEMBOT ACTIVATE!"
@@ -179,17 +179,21 @@ assemble_files= (type, info, callback)->
     if converter.validTypeFor type, ext
       pkg_list.push fullpath 
   build_count= 0
+  # _.pp pkg_list
   for fullpath in pkg_list
     file= path.basename(fullpath)
     ext= path.extname(fullpath)
     libpath= fullpath.replace(src_dir, '').replace(ext, '')
-    info.current_file= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:libpath
-    converter.buildSourceFor type, fullpath, info, (err, converted_source)->
+    local_info= _.extend {}, info
+    local_info.current_file= fullpath:fullpath, filename:file, loadpath:src_path, ext:ext, path:libpath
+    converter.buildSourceFor type, fullpath, local_info, (err, converted_source, opts)->
       throw err if err?
       build_count += 1
-      output[info.current_file.path]= converted_source
+      output[opts.current_file.path]= converted_source
+      # _.puts " - #{opts.current_file.filename} (#{build_count}/#{pkg_list.length})" # if verbose
       if build_count == pkg_list.length
         callback null, output
+  # converter.debug()
   pkg_list
 
 
@@ -252,12 +256,12 @@ build_js_package= (sources, opts={})->
         }
       }
       return this.#{identifier}.define;
-    }).call(this)({
+    }).call(this)({\n
   """
 
   index = 0
   for name, source of sources
-    result += if index++ is 0 then "" else ", "
+    result += if index++ is 0 then "" else ",\n"
     result += JSON.stringify name
     result += ": function(exports, require, module) {#{source}}"
 

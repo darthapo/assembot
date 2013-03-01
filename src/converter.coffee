@@ -28,6 +28,9 @@ validType= (target)->
 # The public API
 module.exports= api=
 
+  debug: ->
+    _.pp type_db
+
   addFor: (target, type, converter)->
     target= validType(target)
     type= validType(type)
@@ -77,11 +80,29 @@ module.exports= api=
 #
 
 addConvertor= (target, type, modules, handler)->
-  try
-    modules= [modules] unless _.isArray modules
-    args=[]
-    for module in modules
-      args.push _.tryRequireLocalFirst module
+  modules= [modules] unless _.isArray modules
+  args= []
+  if modules.length > 0
+    api.addFor target, type, (source,opts,callback)-> 
+      for module in modules
+        _.tryRequire module, (err, lib)->
+          if err?
+            # Could not load requirement
+            file= "#{ opts.current_file.path }#{ opts.current_file.ext }"
+            _.pp err
+            throw "Cannot transpile #{file}: Module(s) '#{ modules.join "'"}' cannot be loaded! #{err}"
+          args.push lib
+          if args.length >= modules.length
+            converter= handler.apply handler, args
+            subHandler= (s,o,c)->
+              try
+                converter(s,o,c)
+              catch ex
+                file= "#{ o.current_file.path }#{ o.current_file.ext }"
+                c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, o
+            api.addFor target, type, subHandler
+            subHandler source, opts, callback
+  else
     converter= handler.apply handler, args
     api.addFor target, type, (s,o,c)->
       try
@@ -89,12 +110,8 @@ addConvertor= (target, type, modules, handler)->
       catch ex
         file= "#{ o.current_file.path }#{ o.current_file.ext }"
         c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, o
-        # throw new Error("Transpiler error for #{ file }: #{ ex.message }")
 
-
-  catch ex
-    # Could not load requirement
-    api.addFor target, type, -> throw "Module(s) '#{ modules.join "'"}' cannot be found!"
+  true
 
 addJsConvertor= (type, modules, handler)-> addConvertor 'js', type, modules, handler
 addCssConvertor= (type, modules, handler)-> addConvertor 'css', type, modules, handler
@@ -109,19 +126,25 @@ addJsConvertor '.html', [], ->
   (source, opts, converted)->
     converted null, """module.exports=#{JSON.stringify source};""", opts
 
+addJsConvertor '.json', [], -> 
+  (source, opts, converted)->
+    data= JSON.parse source
+    converted null, """module.exports=#{JSON.stringify data};""", opts
+
 addJsConvertor '.coffee', 'coffee-script', (coffee)-> 
   (source, opts, converted)->
-    opts = opts.coffee || {}
-    opts.bare ?= yes
-    output= coffee.compile source, opts
+    options = _.defaults (opts.coffee || {}),
+      bare: yes
+      literate: no
+    output= coffee.compile source, options
     converted null, output, opts
 
 addJsConvertor '.litcoffee', 'coffee-script', (coffee)-> 
   (source, opts, converted)->
-    opts = opts.coffee || {}
-    opts.bare ?= yes
-    opts.literate ?= yes
-    output= coffee.compile source, opts
+    options = _.defaults (opts.coffee || {}),
+      bare: yes
+      literate: yes
+    output= coffee.compile source, options
     converted null, output, opts
 
 addJsConvertor '.eco', 'eco', (eco)-> 
@@ -129,12 +152,42 @@ addJsConvertor '.eco', 'eco', (eco)->
     output= eco.precompile source
     converted null, output, opts
 
-addJsConvertor '.json', [], -> 
+addJsConvertor '.ejs', 'ejs', (ejs)->
   (source, opts, converted)->
-    data= JSON.parse source
-    converted null, """module.exports= #{JSON.stringify data};""", opts
+    output= ejs.compile(source, client:true, compileDebug:false)
+    converted null, """module.exports= #{output.toString()};""", opts
 
-# TODO: Add default converters for: yaml(?), ejs, handlebars, jade, others?
+addJsConvertor '.handlebars', 'handlebars', (handlebars)->
+  (source, opts, converted)->
+    options= _.defaults (opts.handlebars || {}),
+      simple: false
+      commonjs: true
+    output= handlebars.precompile(source, options)
+    converted null, """module.exports= #{output.toString()};""", opts
+
+addJsConvertor '.jade', 'jade', (jade)->
+  (source, opts, converted)->
+    options= _.defaults (opts.jade || {}),
+      client: true
+      compileDebug: false
+    output= jade.compile(source, options)
+    converted null, """module.exports= #{output.toString()};""", opts
+
+addJsConvertor '.hogan', 'hogan.js', (hogan)->
+  (source, opts, converted)->
+    options= _.defaults (opts.hogan || {}),
+      asString: 1
+    output= hogan.compile(source, options)
+    converted null, """module.exports= new Hogan.Template(#{output.toString()});""", opts
+
+addJsConvertor '.dot', 'doT', (dot)->
+  (source, opts, converted)->
+    options= _.defaults (opts.dot || opts.doT || {}), {}
+    output= dot.compile(source, options)
+    # _.pp """module.exports= #{ output.toString() }"""
+    converted null, """module.exports= #{ output.toString() }""", opts
+
+# TODO: Add default converters for: yaml(?), others?
 
 # Default CSS converters
 addCssConvertor '.css', [], -> 
