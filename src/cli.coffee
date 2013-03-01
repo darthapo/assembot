@@ -10,9 +10,9 @@ server= require './server'
 defaults= require './defaults'
 optparse = require 'optparse'
 
-process.on 'uncaughtException', (ex)->
-  _.log "DANGER!"
-  _.pp ex
+# process.on 'uncaughtException', (ex)->
+#   _.log "DANGER!"
+#   _.pp ex
 
 module.exports=
   run: ->
