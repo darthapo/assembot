@@ -78,7 +78,7 @@ module.exports= api=
 # Default Converters: 
 #
 
-addConvertor= (target, type, modules, handler)->
+addConvertorOLD= (target, type, modules, handler)->
   modules= [modules] unless _.isArray modules
   args= []
   if modules.length > 0
@@ -112,12 +112,31 @@ addConvertor= (target, type, modules, handler)->
 
   true
 
+addConvertor= (target, type, modules, handler)->
+  modules= [modules] unless _.isArray modules
+  loading= no
+  queue= []
+  api.addFor target, type, (origSrc, origOpts, origCallback)->
+    queue.push [origSrc, origOpts, origCallback]
+    unless loading
+      loading= yes
+      _.tryRequireAll modules, (err, libs)->
+        if err?
+          throw "Module(s) '#{ modules.join "'"}' cannot be loaded! #{err}"
+        converter= handler.apply handler, libs
+        safeHandler= (src,opts,callback)->
+          try
+            converter(src,opts,callback)
+          catch ex
+            file= "#{ opts.current_file.path }#{ opts.current_file.ext }"
+            c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, opts
+        api.addFor target, type, safeHandler
+        for arglist in queue
+          safeHandler.apply safeHandler, arglist
+
 addJsConvertor= (type, modules, handler)-> 
   if _.isArray type
-    # _.pp type
     for thisType in type
-      # _.puts "SPLITTING OUT"
-      # _.pp thisType
       addConvertor 'js', thisType, modules, handler
   else
     addConvertor 'js', type, modules, handler

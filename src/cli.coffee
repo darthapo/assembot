@@ -48,7 +48,7 @@ module.exports=
       [      '--init', 'Creates a package.json, if missing']
       [      '--source [PATH]', 'Set source folder']
       [      '--js [PATH]', 'Export js package from source']
-      [      '--css [PATH]', 'Export jcss package from source']
+      [      '--css [PATH]', 'Export css package from source']
       # [      '--out', 'Build to STDOUT']
     ]
 
