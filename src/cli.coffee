@@ -31,9 +31,9 @@ module.exports=
       ['-r', '--root [PATH]', 'Set dev server root path']
       ['-m', '--minify [LEVEL]', 'Force minification 0=none 1=minify 2=mangle']
       ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
-      ['-c', '--modules', 'Shows the commonjs modules for .js build targets']
       ['-v', '--version', 'Shows version number']
       ['-h', '--help', 'Shows help']
+      [      '--init', 'Creates a package.json, if missing']
       [      '--source [PATH]', 'Set source folder']
       [      '--js [PATH]', 'Export js package from source']
       [      '--css [PATH]', 'Export jcss package from source']
@@ -46,11 +46,15 @@ module.exports=
     parser.on 'help',    (name, value)-> command= name
     parser.on 'debug',   (name, value)-> command= name
     parser.on 'files',   (name, value)-> command= name
+    parser.on 'init',    (name, value)-> command= name
     parser.on 'minify',  (name, value)-> options.minify= parseInt value || "1"
     parser.on 'modules', (name, value)-> command= name
     parser.on 'port',    (name, value)-> options.port= value
     parser.on 'serve',   (name, value)-> command= name
     parser.on 'version', (name, value)-> command= name
+    parser.on 'js',      (name, value)-> buildTo[name]= value
+    parser.on 'css',     (name, value)-> buildTo[name]= value
+    parser.on '*',       (name, value)-> _.puts "Unknown option: #{name}"
     parser.on 'root',    (name, value)-> 
       newRoot= path.resolve(value)
       if fs.existsSync newRoot
@@ -60,9 +64,6 @@ module.exports=
     parser.on 'source',  (name, value)-> 
       command= name
       buildTo.source= value
-    parser.on 'js',      (name, value)-> buildTo[name]= value
-    parser.on 'css',     (name, value)-> buildTo[name]= value
-    parser.on '*',       (name, value)-> _.puts "Unknown option: #{name}"
 
     parser.parse process.argv
 
@@ -97,6 +98,28 @@ module.exports=
 
     else if command is 'version'
       _.puts assembot_info.version
+
+    else if command is 'init'
+      _.puts """
+      ASSEMBOT! Bleep, bloop!
+      v#{ assembot_info.version }
+
+      """
+      if fs.existsSync './package.json'
+        _.puts "package.json already exists."
+      else
+        _.puts "Creating a default package.json for you..."
+        template=
+          name: path.basename(process.cwd())
+          version: "1.0.0"
+          license: ""
+          description: ""
+          author: ""
+          assembot: assbot_conf
+        # _.puts JSON.stringify(template, null, 2)
+        fs.writeFileSync path.resolve('./package.json'), JSON.stringify(template, null, 2)
+        _.puts 'Done.'
+
 
     else if command is 'source'
       config={}

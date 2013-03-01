@@ -201,7 +201,7 @@ addJsConvertor ['.md', 'markdown'], 'marked', (marked)->
       smartLists: true
     output= marked(source, options)
     # _.pp """module.exports= #{ output.toString() }"""
-    converted null, """module.exports= #{ JSON.stringify output }""", opts
+    converted null, """module.exports=#{ JSON.stringify output };""", opts
 
 # TODO: Add default converters for: yaml(?), others?
 

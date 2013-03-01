@@ -1,6 +1,6 @@
 {
   "name": "assembot",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "description": "Simple asset assembly bot for compiling/combining client-side js and css files.",
   "author": "Matt McCray <matt@elucidata.net>",
