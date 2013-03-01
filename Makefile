@@ -9,5 +9,9 @@ push:
 	git push dropbox
 	git push github
 
+pushtags:
+	git push dropbox --tag
+	git push github --tag
+
 publish:
 	npm publish
