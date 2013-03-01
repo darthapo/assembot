@@ -2,37 +2,47 @@
 
 ## Version 0.2 - The Clean Up
 
-Move to a class based approach? So you can have something like:
+```coffeescript
+assembot= require 'assembot'
 
-	var package= AssemBot.createPackage('package.js', {
-		source: './source'
-	});
-	
-	package.build(function(err, content, sourcemap){
-		// Do want you want with it here.
-	});
-	
-	package.fileList(function(filelist){
-		// Array of file paths
-	});
-	
-	// Override any settings you'd like
-	package.set({
-		minify: 1
-	});
+package= assembot 'output.js', source:'./source'
 
-Would it be better to base it on the source folder instead of the output file(s)?
+package.build (err, content)->
+	# Assembled, possibly minified, content
 
-	var assembot= AssemBot.createFromSource('./source');
-	
-	assembot.assembleCss(function(err, css){
-		// do with as you please, write to file, whatever.
-	});
-	assembot.assembleJs(function(err, js, srcMap){
-		// Same here
-	});
-	assemby.assembleAll(function(err, css, js, sourcemap){
-		// Whole shebang
-	});
+package.filelist (err, files)->
+	# Array of files included in package
 
+package.set name:'value'
+```
 
+Plugins for build, server, other?
+
+Have a 'content' object that represents the sourcetree
+
+```
+{
+	"file.js": "FILE CONTENTS HERE......",
+	"dir/file2.coffee": "CONTENT HERE"
+}
+```
+
+Should it have more meta?
+
+```javascript
+{
+	"file.coffee", {
+		disabled: false, // set to true to skip it from including in package
+		target:  "js",
+		type: "coffee",
+		path: "file", // module path
+		source: "/full/path/to/source/file.coffee",
+		content: "FILE CONTENTS HERE"
+	}
+}
+```
+
+## Todos
+
+- Terminology
+	- Change all the `config` and `info` strewn about into `target`.

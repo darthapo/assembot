@@ -16,6 +16,10 @@ exports.config=
 exports.options=
   port: 8080
   wwwRoot: './public'
+  #TODO: Make this work:
+  http:
+    "/": "./public"
+    "/components": "./components"
 
 
 exports.assembot=
