@@ -9,7 +9,6 @@ project_package= try
   catch ex
     {}
 
-
 type_db=
   ".js":
     types: []
@@ -113,8 +112,19 @@ addConvertor= (target, type, modules, handler)->
 
   true
 
-addJsConvertor= (type, modules, handler)-> addConvertor 'js', type, modules, handler
-addCssConvertor= (type, modules, handler)-> addConvertor 'css', type, modules, handler
+addJsConvertor= (type, modules, handler)-> 
+  if _.isArray type
+    # _.pp type
+    for thisType in type
+      # _.puts "SPLITTING OUT"
+      # _.pp thisType
+      addConvertor 'js', thisType, modules, handler
+  else
+    addConvertor 'js', type, modules, handler
+  true
+
+addCssConvertor= (type, modules, handler)-> 
+  addConvertor 'css', type, modules, handler
 
 
 # Default JS converters
@@ -131,19 +141,12 @@ addJsConvertor '.json', [], ->
     data= JSON.parse source
     converted null, """module.exports=#{JSON.stringify data};""", opts
 
-addJsConvertor '.coffee', 'coffee-script', (coffee)-> 
+addJsConvertor ['.coffee', '.litcoffee'], 'coffee-script', (coffee)-> 
   (source, opts, converted)->
     options = _.defaults (opts.coffee || {}),
       bare: yes
-      literate: no
-    output= coffee.compile source, options
-    converted null, output, opts
-
-addJsConvertor '.litcoffee', 'coffee-script', (coffee)-> 
-  (source, opts, converted)->
-    options = _.defaults (opts.coffee || {}),
-      bare: yes
-      literate: yes
+    options.literate= (opts.current_file.ext is '.litcoffee' || no)
+    # _.pp options
     output= coffee.compile source, options
     converted null, output, opts
 
@@ -186,6 +189,19 @@ addJsConvertor '.dot', 'doT', (dot)->
     output= dot.compile(source, options)
     # _.pp """module.exports= #{ output.toString() }"""
     converted null, """module.exports= #{ output.toString() }""", opts
+
+addJsConvertor ['.md', 'markdown'], 'marked', (marked)->
+  (source, opts, converted)->
+    options= _.defaults (opts.dot || opts.doT || {}),
+      gfm: true
+      tables: true
+      breaks: false
+      pedantic: false
+      sanitize: false
+      smartLists: true
+    output= marked(source, options)
+    # _.pp """module.exports= #{ output.toString() }"""
+    converted null, """module.exports= #{ JSON.stringify output }""", opts
 
 # TODO: Add default converters for: yaml(?), others?
 

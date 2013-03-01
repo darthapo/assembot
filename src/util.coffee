@@ -38,9 +38,15 @@ exports.walkTree= walk=(dir, callback, files_only=yes)->
 # This may only be needed when using Assembot with npm link, I'm not sure.
 exports.tryRequire= (name, callback)->
   # _.log "tryRequire('#{ name }')"
-  callback null, {} if name is null or name is ''
+  if name is null or name is ''
+    callback null, {} 
+    return
+  if loaded_libs[name]? 
+    callback null, loaded_libs[name]
+    return
   try
     lib= require name
+    loaded_libs[name]= lib
     callback null, lib
   catch ex
     localRequire name, callback
