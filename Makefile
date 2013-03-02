@@ -1,9 +1,10 @@
 
 build:
-	coffee -o lib -c src
+	coffee -o lib/assembot -c src/assembot
 
 watch:
 	coffee -w -o lib -c src 
+
 
 push:
 	git push dropbox

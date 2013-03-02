@@ -27,31 +27,6 @@ validType= (target)->
 # The public API
 module.exports= api=
 
-  debug: ->
-    _.pp type_db
-
-  addFor: (target, type, converter)->
-    target= validType(target)
-    type= validType(type)
-    type_db[target].types.push type
-    type_db[target].handlers[type]= converter
-    @
-
-  validTypeFor: (target, ext)->
-    target= validType(target)
-    type= validType(ext)
-    if type_db[target]? then type_db[target].types.indexOf(type) >= 0 else false
-
-  # Example: 
-  #   convertor.buildSourceFor 'js', '/X.coffee', {}, (err, src, info)-> log src
-  buildSourceFor: (target, fullpath, info, callback)->
-    target= validType(target)
-    ext= path.extname(fullpath)
-    source= fs.readFileSync fullpath, 'utf8'
-    converter= type_db[target].handlers[ext]
-    converter @replaceTokens(String(source), info), info, callback
-    @
-
   tokenParser: /(\{%\-([ a-zA-Z0-9\._]*)\-%\})/g
 
   replaceTokens: (string, info)->
@@ -72,46 +47,45 @@ module.exports= api=
         String(data)
     else
       string
+
+
+  # OLD API
   
 
-#
-# Default Converters: 
-#
 
-addConvertorOLD= (target, type, modules, handler)->
-  modules= [modules] unless _.isArray modules
-  args= []
-  if modules.length > 0
-    api.addFor target, type, (source,opts,callback)-> 
-      for module in modules
-        _.tryRequire module, (err, lib)->
-          if err?
-            # Could not load requirement
-            file= "#{ opts.current_file.path }#{ opts.current_file.ext }"
-            _.pp err
-            throw "Cannot transpile #{file}: Module(s) '#{ modules.join "'"}' cannot be loaded! #{err}"
-          args.push lib
-          if args.length >= modules.length
-            converter= handler.apply handler, args
-            subHandler= (s,o,c)->
-              try
-                converter(s,o,c)
-              catch ex
-                file= "#{ o.current_file.path }#{ o.current_file.ext }"
-                c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, o
-            api.addFor target, type, subHandler
-            subHandler source, opts, callback
-  else
-    converter= handler.apply handler, args
-    api.addFor target, type, (s,o,c)->
+  debug: ->
+    _.pp type_db
+
+  addFor: (target, type, converter)->
+    target= validType(target)
+    type= validType(type)
+    type_db[target].types.push type
+    type_db[target].handlers[type]= (src,opts,callback)->
       try
-        converter(s,o,c)
+        converter(src,opts,callback)
       catch ex
-        file= "#{ o.current_file.path }#{ o.current_file.ext }"
-        c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, o
+        file= "#{ opts.current_file.path }#{ opts.current_file.ext }"
+        ex.name = "Processor Error"
+        ex.message= "Processor Error for #{ file }: #{ ex.message }"
+        callback ex, null, opts
+    @
 
-  true
+  validTypeFor: (target, ext)->
+    target= validType(target)
+    type= validType(ext)
+    if type_db[target]? then type_db[target].types.indexOf(type) >= 0 else false
 
+  # Example: 
+  #   convertor.buildSourceFor 'js', '/X.coffee', {}, (err, src, info)-> log src
+  buildSourceFor: (target, fullpath, info, callback)->
+    target= validType(target)
+    ext= path.extname(fullpath)
+    source= fs.readFileSync fullpath, 'utf8'
+    converter= type_db[target].handlers[ext]
+    converter @replaceTokens(String(source), info), info, callback
+    @
+
+  
 addConvertor= (target, type, modules, handler)->
   modules= [modules] unless _.isArray modules
   loading= no
@@ -121,18 +95,12 @@ addConvertor= (target, type, modules, handler)->
     unless loading
       loading= yes
       _.tryRequireAll modules, (err, libs)->
-        if err?
-          throw "Module(s) '#{ modules.join "'"}' cannot be loaded! #{err}"
+        throw new Error("Module(s) '#{ modules.join "'"}' cannot be loaded! #{err}") if err?
         converter= handler.apply handler, libs
-        safeHandler= (src,opts,callback)->
-          try
-            converter(src,opts,callback)
-          catch ex
-            file= "#{ opts.current_file.path }#{ opts.current_file.ext }"
-            c new Error("Transpiler error for #{ file }: #{ ex.message }"), null, opts
-        api.addFor target, type, safeHandler
-        for arglist in queue
-          safeHandler.apply safeHandler, arglist
+        api.addFor target, type, converter
+        converter.apply converter, arglist for arglist in queue
+        true
+          
 
 addJsConvertor= (type, modules, handler)-> 
   if _.isArray type
@@ -144,6 +112,11 @@ addJsConvertor= (type, modules, handler)->
 
 addCssConvertor= (type, modules, handler)-> 
   addConvertor 'css', type, modules, handler
+
+#
+# Default Converters: 
+#
+
 
 
 # Default JS converters

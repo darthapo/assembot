@@ -221,7 +221,7 @@ build_js_package= (sources, opts={})->
                 return require(name, dirname(path));
               }
               localRequire.modules= moduleList;
-              fn(module.exports, localRequire, module);
+              fn(module.exports, localRequire, module, this);
               return module.exports;
             } catch (err) {
               delete cache[path];
@@ -266,7 +266,7 @@ build_js_package= (sources, opts={})->
   for name, source of sources
     result += if index++ is 0 then "" else ",\n"
     result += JSON.stringify name
-    result += ": function(exports, require, module) {#{source}}"
+    result += ": function(exports, require, module, global) {#{source}}"
 
   result += """
     });\n

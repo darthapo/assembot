@@ -1,0 +1,39 @@
+#!/usr/bin/env coffee
+
+cli= require 'commander'
+{assembot, _}= require '../lib/assembot'
+{puts, pp}= _
+
+cli
+  .option('-f, --force', 'force installation')
+  .parse(process.argv);
+
+puts ''
+puts("Building...");
+
+bot= assembot './source'
+
+# pp bot
+
+bot.build 'js', (err, content)->
+  puts "Built!"
+  # pp content
+  pp bot
+
+
+
+
+
+# // var pkgs = program.args;
+
+# // if (!pkgs.length) {
+# //   console.error('packages required');
+# //   process.exit(1);
+# // }
+
+# // console.log();
+# // if (program.force) console.log('  force: install');
+# // pkgs.forEach(function(pkg){
+# //   console.log('  install : %s', pkg);
+# // });
+# // console.log();

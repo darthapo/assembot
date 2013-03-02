@@ -1,4 +1,18 @@
-#!/usr/bin/env node
+#!/usr/bin/env coffee
 
-var cli= require("../lib/cli.js")
-cli.run()
+src= "BEEP BOOP BLARP CLANG OORT".split ' '
+sfx= src[Math.floor(Math.random() * src.length)]
+
+console.log "\n  AssemBot! *#{ sfx }*"
+
+cli= require 'commander'
+ 
+cli
+  .version('0.2')
+  .command('build', 'Builds target package(s)')
+  .command('serve', 'Starts dev server')
+  .command('new [PROJECT]', 'Create a new project')
+  .command('init', 'Creates a package.json, if missing')
+  .command('info', 'Show information about build')
+  .command('debug', 'Show debug information')
+  .parse(process.argv)

@@ -1,12 +1,19 @@
 {
   "name": "assembot",
-  "version": "0.1.7pre",
+  "version": "0.2.0pre",
   "license": "MIT",
   "description": "Simple asset assembly bot for compiling/combining client-side js and css files.",
   "author": "Matt McCray <matt@elucidata.net>",
-  "main": "./lib/builder.js",
+  "main": "./lib/assembot/index.js",
   "bin": {
-    "assembot": "./bin/assembot"
+    "assembot": "./bin/assembot",
+    "assembot-build": "./bin/assembot-build",
+    "assembot-debug": "./bin/assembot-debug",
+    "assembot-info": "./bin/assembot-info",
+    "assembot-init": "./bin/assembot-init",
+    "assembot-new": "./bin/assembot-new",
+    "assembot-serve": "./bin/assembot-serve",
+    "oldassembot": "./bin/oldassembot"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,7 +32,7 @@
     "nib": "~0.9.1",
     "uglify-js": "~2.2.5",
     "express": "~3.1.0",
-    "optparse": "~1.0.4",
-    "marked": "~0.2.8"
+    "marked": "~0.2.8",
+    "commander": "~1.1.1"
   }
 }

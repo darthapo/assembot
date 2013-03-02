@@ -1,0 +1,12 @@
+#!/usr/bin/env coffee
+
+{assembot, _}= require '../lib/assembot'
+{puts, pp}= _
+
+puts ''
+
+puts "Configuration"
+
+bot= assembot './source'
+
+pp bot

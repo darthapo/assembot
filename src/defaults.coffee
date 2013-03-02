@@ -8,9 +8,6 @@ exports.config=
   sourceMap: no # still a work in progress
   header: "/* Assembled by AssemBot {%- assembot.version -%} */"
   replaceTokens: yes
-  coffee:
-    bare: yes
-    literate: no
 
 
 exports.options=

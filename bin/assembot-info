@@ -1,0 +1,35 @@
+#!/usr/bin/env coffee
+path= require 'path'
+_= require '../lib/assembot/util'
+
+{ResourceList}=require '../lib/assembot/resources'
+
+
+_.puts ''
+# _.puts 'LISTING ./source'
+
+res= new ResourceList './source'
+
+res.scan (err, tree, reslist)->
+  # _.pp arguments
+  # _.pp tree
+  _.puts 'resources:'  
+  for k, v of tree
+    _.puts k
+    # ...
+  
+
+# _.walk path.resolve('./source'), (err, files)->
+#   if err?
+#     _.puts "ERROR:"
+#     _.pp err
+#   else
+#     _.puts "#{ files.length } FILES:"
+#     _.pp files
+
+
+# _.walkSync path.resolve('./'), (err, files)->
+#   _.puts "ERROR:"
+#   _.pp err
+#   _.puts "#{ files.length } FILES:"
+#   _.pp files
