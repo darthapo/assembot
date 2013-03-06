@@ -73,7 +73,7 @@ module.exports= api=
   validTypeFor: (target, ext)->
     target= validType(target)
     type= validType(ext)
-    if type_db[target]? then type_db[target].types.indexOf(type) >= 0 else false
+    if type_db[target]? then (type in type_db[target].types) else false
 
   # Example: 
   #   convertor.buildSourceFor 'js', '/X.coffee', {}, (err, src, info)-> log src
@@ -117,8 +117,6 @@ addCssConvertor= (type, modules, handler)->
 # Default Converters: 
 #
 
-
-
 # Default JS converters
 addJsConvertor '.js', [], -> 
   (source, opts, converted)->
@@ -146,33 +144,25 @@ addJsConvertor '.eco', 'eco', (eco)->
     output= eco.precompile source
     converted null, """module.exports= #{output};""", opts
 
+addJsConvertor ['.mustache'], ['coffee-templates'], (coffee_templates)-> 
+  (source, opts, converted)->
+
+    # output= if opts.current_file.ext.indexOf('coffee') > 0
+    #   # this branch isn't working...
+    #   code= coffee.compile( source, bare:yes )
+    #   # _.puts "CODE:"
+    #   # _.pp code
+    #   eng= new coffee_templates format: true, handlebars: true
+    #   coffee_templates.compile eval("function(){#{ code }}")
+    # else
+    #   coffee_templates.compile source
+    output= coffee_templates.compile source
+    converted null, """module.exports= #{output};""", opts
+
 addJsConvertor '.ejs', 'ejs', (ejs)->
   (source, opts, converted)->
     output= ejs.compile(source, client:true, compileDebug:false)
     converted null, """module.exports= #{output.toString()};""", opts
-
-addJsConvertor '.handlebars', 'handlebars', (handlebars)->
-  (source, opts, converted)->
-    options= _.defaults {}, (opts.handlebars || {}),
-      simple: false
-      commonjs: true
-    output= handlebars.precompile(source, options)
-    converted null, """module.exports= #{output.toString()};""", opts
-
-addJsConvertor '.jade', 'jade', (jade)->
-  (source, opts, converted)->
-    options= _.defaults {}, (opts.jade || {}),
-      client: true
-      compileDebug: false
-    output= jade.compile(source, options)
-    converted null, """module.exports= #{output.toString()};""", opts
-
-addJsConvertor '.hogan', 'hogan.js', (hogan)->
-  (source, opts, converted)->
-    options= _.defaults {}, (opts.hogan || {}),
-      asString: 1
-    output= hogan.compile(source, options)
-    converted null, """module.exports= new Hogan.Template(#{output.toString()});""", opts
 
 addJsConvertor '.dot', 'doT', (dot)->
   (source, opts, converted)->
@@ -194,7 +184,57 @@ addJsConvertor ['.md', 'markdown'], 'marked', (marked)->
     # _.pp """module.exports= #{ output.toString() }"""
     converted null, """module.exports=#{ JSON.stringify output };""", opts
 
+addJsConvertor '.settee', ['./settee'], (settee)->
+  (source, opts, converted)->
+    output= """
+      if(!this.settee) settee= require('settee');
+      module.exports=settee(#{JSON.stringify settee.settee.parse(source)});
+    """
+    converted null, output, opts
+
+
+# These require a runtime component.. Use at your own risk.
+addJsConvertor '.jade', 'jade', (jade)->
+  _.puts "Jade requires a runtime, be sure it's included in your page."
+  (source, opts, converted)->
+    options= _.defaults {}, (opts.jade || {}),
+      client: true
+      compileDebug: false
+    output= jade.compile(source, options)
+    converted null, """module.exports= #{output.toString()};""", opts
+addJsConvertor '.hogan', 'hogan.js', (hogan)->
+  _.puts "Hogan requires a runtime, be sure it's included in your page."
+  (source, opts, converted)->
+    options= _.defaults {}, (opts.hogan || {}),
+      asString: 1
+    output= hogan.compile(source, options)
+    converted null, """module.exports= new Hogan.Template(#{output.toString()});""", opts
+addJsConvertor '.handlebars', 'handlebars', (handlebars)->
+  _.puts "Handlebars requires a runtime, be sure it's included in your page."
+  (source, opts, converted)->
+    options= _.defaults {}, (opts.handlebars || {}),
+      simple: false
+      commonjs: true
+    output= handlebars.precompile(source, options)
+    converted null, """module.exports= #{output.toString()};""", opts
+
+
+
 # TODO: Add default converters for: yaml(?), others?
+
+compile_less= (less, source, callback)->
+  less.render source, callback
+
+compile_stylus= (stylus, nib, source, opts, callback)->
+  options= _.defaults {}, (opts.stylus || {}),
+    filename: opts.current_file.filename || 'generated.css'
+    paths: opts.load_paths
+  stylus(source)
+    .set('filename', opts.current_file.filename || 'generated.css')
+    .set('paths', opts.load_paths)
+    .set(options)
+    .use(nib())
+    .render callback
 
 # Default CSS converters
 addCssConvertor '.css', [], -> 
@@ -203,25 +243,67 @@ addCssConvertor '.css', [], ->
 
 addCssConvertor '.less', 'less', (less)-> 
   (source, opts, converted)->
-    less.render source, (err, css)->
+    compile_less less, source, (err, css)->
       converted err, null, opts if err?
       converted null, css, opts
 
 addCssConvertor '.styl', ['stylus', 'nib'], (stylus, nib)->
   load_paths= [process.cwd(), path.dirname(__dirname)]
   (source, opts, converted)->
-    options= _.defaults {}, (opts.marked || {}),
-      filename: opts.current_file.filename || 'generated.css'
-      paths: load_paths
-    stylus(source)
-      .set('filename', opts.current_file.filename || 'generated.css')
-      .set('paths', load_paths)
-      .set(options)
-      .use(nib())
-      .render (err, css)->
-        if err?
-          converted err, null, opts
-        else
-          converted null, css, opts
+    opts.load_paths= load_paths
+    compile_stylus stylus, nib, source, opts, (err, css)->
+      if err?
+        converted err, null, opts
+      else
+        converted null, css, opts
+
+# Add other ones too???
+
+
+## Embedded CSS Support
+
+ecss_wrapper= (css)->
+  """
+  var node = null, css = #{ JSON.stringify css };
+  module.exports= {
+    content: css,
+    isActive: function(){ return node != null; },
+    activate: function(to){
+      if(node != null) return; // Already added to DOM!
+      to= to || document.getElementsByTagName('HEAD')[0] || document.body || document; // In the HEAD or BODY tags
+      node= document.createElement('style');
+      node.innerHTML= css;
+      to.appendChild(node);
+      return this;
+    },
+    deactivate: function() {
+      if(node != null) {
+        node.parentNode.removeChild(node);
+        node = null;
+      }
+      return this;
+    }
+  };
+  """
+
+addJsConvertor '.ecss', [], -> 
+  (source, opts, converted)->
+    converted null, ecss_wrapper(source), opts
+
+addJsConvertor '.eless', 'less', (less)-> 
+  (source, opts, converted)->
+    compile_less less, source, (err, css)->
+      converted err, null, opts if err?
+      converted null, ecss_wrapper(css), opts
+
+addJsConvertor '.estyl', ['stylus', 'nib'], (stylus, nib)->
+  load_paths= [process.cwd(), path.dirname(__dirname)]
+  (source, opts, converted)->
+    opts.load_paths= load_paths
+    compile_stylus stylus, nib, source, opts, (err, css)->
+      if err?
+        converted err, null, opts
+      else
+        converted null, ecss_wrapper(css), opts
 
 # Add other ones too???

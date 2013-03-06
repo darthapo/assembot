@@ -9,6 +9,32 @@ css_package= (resources, options, callback)->
 
 exports.css= css_package
 
+ecss_wrapper= (css)->
+  """
+  var node = null, css = #{ JSON.stringify css };
+  module.exports= {
+    content: css,
+    isActive: function(){ return node != null; },
+    activate: function(to){
+      if(node != null) return; // Already added to DOM!
+      to= to || document.getElementsByTagName('HEAD')[0] || document.body || document; // In the HEAD or BODY tags
+      node= document.createElement('style');
+      node.innerHTML= css;
+      to.appendChild(node);
+      return this;
+    },
+    deactivate: function() {
+      if(node != null) {
+        node.parentNode.removeChild(node);
+        node = null;
+      }
+      return this;
+    }
+  };
+  """
+
+exports.embedded_css= ecss_wrapper
+
 js_package= (resources, options, callback)->
   identifier= options.ident ? 'require' 
   autoStart= options.autoStart ? false
@@ -37,7 +63,7 @@ js_package= (resources, options, callback)->
                 return require(name, dirname(path));
               }
               localRequire.modules= moduleList;
-              fn(module.exports, localRequire, module, this);
+              fn(module.exports, localRequire, module);
               return module.exports;
             } catch (err) {
               delete cache[path];
@@ -80,7 +106,7 @@ js_package= (resources, options, callback)->
   resources.eachForTarget 'js', (res, i)->
     result += if i is 0 then "" else ",\n"
     result += JSON.stringify res.path
-    result += ": function(exports, require, module, global) {\n#{ res.content }\n}"
+    result += ": function(exports, require, module) {\n#{ res.content }\n}"
   result += """
     });\n
   """

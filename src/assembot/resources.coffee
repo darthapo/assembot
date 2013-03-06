@@ -75,6 +75,8 @@ class ResourceList extends EventEmitter
       @errors.push err 
     else
       res= new Resource @getSourcePathFor(filepath), contents
+      if @tree[res.path]?
+        _.puts "Warning: redefining module '#{ res.path }'"
       @tree[res.path]= res
     if @_loadCount == @length
       @ready= yes
@@ -89,7 +91,7 @@ class ResourceList extends EventEmitter
   @
 
   getSourcePathFor: (fullpath)->
-    fullpath.replace "#{ @source }/", ''
+    fullpath.replace "#{ @source }#{ path.sep }", ''
 
 
   @scan: (source, callback)->

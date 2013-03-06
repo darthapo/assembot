@@ -51,6 +51,18 @@ In your sources files you can embed data defined in your `package.json` file by 
 
 If you have `replaceTokens` set to `true`, AssemBot will attempt to replace all tokens in your sources files. It is enabled by default.
 
+## Embedded CSS
+
+Supports compiling CSS into the JS package. Use `.ecss` (or `.estyl` or `.eless`) file extension. Generates a method module you can use like this:
+
+```coffeescript
+require('my/view/styles').activate()
+# Module supports
+#  .activate()   - Appends a <style> tag to HEAD, BODY, or document
+#  .deactivate() - Removes <styles> tag
+#  .isActive()   - Boolean 
+```
+
 ## Dev Server
 
 AssemBot comes with a dev server, to use it:

@@ -3,23 +3,23 @@ fs= require 'fs'
 path= require 'path'
 {spawn, exec}= require 'child_process'
 
-exports.pp= (obj)-> util.puts util.inspect obj
+pp= (obj)-> 
+  util.puts util.inspect obj
 
-exports.extend= (obj)->
+extend= (obj)->
   for source in Array::slice.call(arguments, 1)
     if source
       for key,value of source
         obj[key]= value
   obj
       
-exports.defaults= (obj)->
+defaults= (obj)->
   for source in Array::slice.call(arguments, 1)
     if source
       for key,value of source
         unless obj[key]?
           obj[key]= value
   obj
-
 
 walk= (dir, done)->
   results= []
@@ -28,7 +28,7 @@ walk= (dir, done)->
     pending = list.length
     return done(null, results) unless pending
     list.forEach (file)->
-      filepath = "#{ dir }/#{ file }"
+      filepath = "#{ dir }#{ path.sep }#{ file }"
       fs.stat filepath, (err, stat)->
         if stat.isDirectory()
           walk filepath, (err, res)->
@@ -51,18 +51,13 @@ walkSync= (dir, callback, files_only=yes)->
       callback fullpath, filename, false
   file_list
 
-
-
-exports.walk= walk
-exports.walkSync= walkSync
-
-exports.validateOptionsCallback= (options, callback)->
+validateOptionsCallback= (options, callback)->
   if typeof options is 'function'
     [{}, options]
   else
     [options, callback]
 
-exports.tryRequire= (name, callback)->
+tryRequire= (name, callback)->
   if name is null or name is ''
     callback null, {} 
     return
@@ -76,7 +71,7 @@ exports.tryRequire= (name, callback)->
   catch ex
     localRequire name, callback
 
-exports.tryRequireAll= (names, callback)->
+tryRequireAll= (names, callback)->
   if names.length is 0
     callback(null, [])
     return
@@ -92,26 +87,27 @@ exports.tryRequireAll= (names, callback)->
         callback null, libs
       else
         nextLib= libnames.shift()
-        exports.tryRequire nextLib, loader
+        tryRequire nextLib, loader
 
-  exports.tryRequire nextLib, loader
-
-_= exports
+  tryRequire nextLib, loader
 
 loaded_libs= {}
 loading_now= {}
 
-localRequire= (name, callback)->
+isAlreadyLoaded= (name, callback)->
   if loaded_libs[name]?
     callback(null, loaded_libs[name]) 
-    return
+    return true
   if loading_now[name]?
     loading_now[name].push callback
-    return
+    true
   else
     loading_now[name]= []
     loading_now[name].push callback
+    false
 
+localRequire= (name, callback)->
+  return false if isAlreadyLoaded(name, callback)
   cmd= "#{process.execPath} -p -e \"require.resolve('#{ name }')\""
   child= exec cmd, (stdin, stdout, stderr)->
     libpath= stdout.trim()
@@ -119,18 +115,30 @@ localRequire= (name, callback)->
       err= new Error("Could not load '#{name}' module. (no local path)")
       for cb in loading_now[name]
         cb err, null
-      delete loading_now[name]
-    try
-      lib= require libpath
-      loaded_libs[name]= lib
-      for cb in loading_now[name]
-        cb null, lib
-      delete loading_now[name]
-    catch ex
-      for cb in loading_now[name]
-        cb ex, null
-      delete loading_now[name]
+    else
+      try
+        lib= require libpath
+        loaded_libs[name]= lib
+        for cb in loading_now[name]
+          cb null, lib
+      catch ex
+        for cb in loading_now[name]
+          cb ex, null
+    delete loading_now[name]
   true
 
-exports.extend exports, util
+
+module.exports= {
+  pp
+  extend
+  defaults
+  walk
+  walkSync
+  validateOptionsCallback
+  tryRequire
+  tryRequireAll
+  localRequire
+}
+
+extend module.exports, util
 

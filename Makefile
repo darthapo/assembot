@@ -2,6 +2,9 @@
 build:
 	coffee -o lib/assembot -c src/assembot
 
+oldbuild:
+	coffee -o lib -c src
+
 watch:
 	coffee -w -o lib -c src 
 

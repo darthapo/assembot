@@ -33,6 +33,7 @@
     "uglify-js": "~2.2.5",
     "express": "~3.1.0",
     "marked": "~0.2.8",
-    "commander": "~1.1.1"
+    "commander": "~1.1.1",
+    "coffee-templates": "0.0.6"
   }
 }
