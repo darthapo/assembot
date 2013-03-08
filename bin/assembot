@@ -2,13 +2,11 @@
 
 src= "BEEP BOOP BLARP CLANG OORT".split ' '
 sfx= src[Math.floor(Math.random() * src.length)]
-
-console.log "\n  AssemBot! *#{ sfx }*"
-
+pkg= require '../package'
 cli= require 'commander'
  
 cli
-  .version('0.2')
+  .version(pkg.version)
   .command('build', 'Builds target package(s)')
   .command('serve', 'Starts dev server')
   .command('new [PROJECT]', 'Create a new project')
@@ -16,3 +14,10 @@ cli
   .command('info', 'Show information about build')
   .command('debug', 'Show debug information')
   .parse(process.argv)
+
+log= require '../lib/assembot/log'
+
+log.level 2 if cli.verbose
+log.level 0 if cli.quiet
+
+log.info "\n  AssemBot! *#{ sfx }*"

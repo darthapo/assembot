@@ -1,24 +1,40 @@
 #!/usr/bin/env coffee
 
 cli= require 'commander'
-{assembot, _}= require '../lib/assembot'
-{puts, pp}= _
+pkg= require '../package'
+{assembot, _, loadTargets}= require '../lib/assembot'
+log= require '../lib/assembot/log'
+# {puts, pp}= _
 
 cli
-  .option('-f, --force', 'force installation')
+  .version(pkg.version)
+  .option('-v, --verbose', 'force installation')
+  .option('-q, --quiet', 'force installation')
   .parse(process.argv);
 
-puts ''
-puts("Building...");
+log.level 0 if cli.quiet
+log.level 2 if cli.verbose
 
-bot= assembot './source'
+log.info ''
+log.info "Building..."
 
-# pp bot
+for target, options of loadTargets()
+  log.info "Target:", target
+  log.debug "Configuration:"
+  log.debug options
+  bot= assembot target, options
+  bot.build() #(err, content)->
+    # log.info "RETURNED"
+    # log.info content
+  log.debug ''
+  
 
-bot.build 'js', (err, content)->
-  puts "Built!"
-  # pp content
-  pp bot
+# # pp bot
+
+# bot.build 'js', (err, content)->
+#   puts "Built!"
+#   # pp content
+#   pp bot
 
 
 

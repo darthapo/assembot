@@ -21,7 +21,5 @@ module.exports=
   targets:
     "public/app.js":
       source: './source'
-      coffee:
-        bare: no # precedence: 1 (commandline gets precedence: 2)
     "public/app.css":
       source: './source'

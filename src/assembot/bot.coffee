@@ -2,41 +2,35 @@ _= require './util'
 fs= require 'fs'
 path= require 'path'
 defaults= require './defaults'
-{Assembler}= require './assembler'
-{ResourceList}= require './resources'
+log= require('./log')
+packager= require './packager'
+processor= require './processor'
+{echo}= require 'shelljs'
+{assembler}= require './assembler'
+{resourcelist}= require './resources'
 
 class Bot
 
-  constructor: (@source, @options={})->
-    @source= path.resolve @source
-    @resources= new ResourceList @source
-    @assembler= new Assembler @resources
-    _.defaults @options, defaults.options
+  constructor: (@output, @options={})->
+    throw new Error "Options must specify source dir!" unless @options.source?
+    _.defaults @options, defaults.options # ... overkill?
+    @output= path.resolve @output
+    @source= path.resolve @options.source
+    @target= processor.targetOf(@output)
 
-  get: (key)->
-    @options[key]
-
-  set: (keyOrHash, value)->
-    if typeof keyOrHash is 'string'
-      @options[keyOrHash]=value
-    else
-      for key, val of keyOrHash
-        @options[key]= val
-        
-  # build: (target, options, callback)->
-    # [options, callback]= _.validateOptionsCallback options, callback
-  build: (target, callback)->
-    @resources.scan (err)=>
-      return callback err if err?
-      # Process resources...
-      @assembler.package target, (err, content)->
-        callback err, content
+  build: (callback)->
+    resources= resourcelist(@source).forTarget @target
+    processor.render resources, @options, (err)=>
+      assembler @target, resources, @options, (err, content)=>
+        if callback?
+          callback err, content
+        else
+          throw err if err?
+          log.info "Saving to", @output
+          # TODO: Minify!!!
+          content.to @output
 
   rebuild: @::build
-
-  # serve: (options, callback)->
-  #   [options, callback]= _.validateOptionsCallback options, callback
-  #   _.puts "Serving"
 
 
 module.exports= {Bot}

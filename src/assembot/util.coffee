@@ -21,35 +21,50 @@ defaults= (obj)->
           obj[key]= value
   obj
 
-walk= (dir, done)->
-  results= []
-  fs.readdir dir, (err, list)->
-    return done(err) if err?
-    pending = list.length
-    return done(null, results) unless pending
-    list.forEach (file)->
-      filepath = "#{ dir }#{ path.sep }#{ file }"
-      fs.stat filepath, (err, stat)->
-        if stat.isDirectory()
-          walk filepath, (err, res)->
-            results= results.concat(res)
-            done(null, results) if (!--pending)
-        else
-          results.push(filepath)
-          done(null, results) if (!--pending)
-    null
-
-walkSync= (dir, callback, files_only=yes)->
-  file_list= fs.readdirSync dir
-  for filename in file_list
-    fullpath= [dir, filename].join path.sep
-    stat= fs.statSync fullpath
-    if stat.isDirectory()
-      callback fullpath, filename, true unless files_only
-      walkSync fullpath, callback
+type= do ->
+  toStr= Object::toString
+  elemParser= /\[object HTML(.*)\]/
+  classToType= {}
+  for name in "Boolean Number String Function Array Date RegExp Undefined Null NodeList".split(" ")
+    classToType["[object " + name + "]"] = name.toLowerCase()
+  (obj) ->
+    strType = toStr.call(obj)
+    if found= classToType[strType]
+      found
+    else if found= strType.match(elemParser)
+      found[1].toLowerCase()
     else
-      callback fullpath, filename, false
-  file_list
+      "object"
+
+# walk= (dir, done)->
+#   results= []
+#   fs.readdir dir, (err, list)->
+#     return done(err) if err?
+#     pending = list.length
+#     return done(null, results) unless pending
+#     list.forEach (file)->
+#       filepath = "#{ dir }#{ path.sep }#{ file }"
+#       fs.stat filepath, (err, stat)->
+#         if stat.isDirectory()
+#           walk filepath, (err, res)->
+#             results= results.concat(res)
+#             done(null, results) if (!--pending)
+#         else
+#           results.push(filepath)
+#           done(null, results) if (!--pending)
+#     null
+
+# walkSync= (dir, callback, files_only=yes)->
+#   file_list= fs.readdirSync dir
+#   for filename in file_list
+#     fullpath= [dir, filename].join path.sep
+#     stat= fs.statSync fullpath
+#     if stat.isDirectory()
+#       callback fullpath, filename, true unless files_only
+#       walkSync fullpath, callback
+#     else
+#       callback fullpath, filename, false
+#   file_list
 
 validateOptionsCallback= (options, callback)->
   if typeof options is 'function'
@@ -132,8 +147,7 @@ module.exports= {
   pp
   extend
   defaults
-  walk
-  walkSync
+  type
   validateOptionsCallback
   tryRequire
   tryRequireAll

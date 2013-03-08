@@ -1,33 +1,45 @@
-###
 
-Stages:
-
-  - Content tree generation
-  - Preprocess (unshift user added preprocessors)
-  - Process (transpile)
-  - Postprocess (?)
-  - Assemble (build into commonjs library or single css file)
-  - Minify
-
-
-###
-
+log= require('./log')
 defaults= require './defaults'
 _= require './util'
-{Assembler}= require './assembler'
+path= require 'path'
+packager= require './packager'
+processor= require './processor'
+project_root= process.cwd()
+{resourcelist}= require './resources'
+{assembler}= require './assembler'
 {Bot}= require './bot'
-{Resource, ResourceList}= require './resources'
-# TODO Add
-#  packager
-#  processor
 
 
-### Usage:
-  bot= assembot('./source')
-  bot.build minify:yes, -> console.log 'done' ###
-assembot= (source, options={})->
-  new Bot source, options
+loadFirstLocalPackage= (names...)->
+  for name in names
+    try
+      data= require "#{ project_root }#{ path.sep }#{ name }"
+      if data.assembot?
+        log.debug "Loaded #{ name }.json"
+        return data.assembot
+      else
+        throw new Error "No Assembot block"
+    catch ex
+      log.debug "No '#{ name }.json' file found!"
+  log.debug "No configuration found, using defaults!"
+  defaults
 
+loadTargets= ->
+  nfo= loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
+  options= nfo.options ? defaults.options
+  src_targets= nfo.targets ? defaults.targets
+  targets= {}
+  for tgt, opts of src_targets
+    tgt_opts= _.defaults {}, opts, options, defaults.options
+    targets[tgt]= tgt_opts
+  targets
+
+loadOptions= ->
+  nfo= loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
+  nfo.options ? defaults.options
   
-
-module.exports={assembot, defaults, _, Assembler, Resource, ResourceList, Bot}
+assembot= (target, options={})->
+  new Bot target, options
+  
+module.exports={assembot, defaults, assembler, resourcelist, loadTargets, packager, processor, loadOptions}

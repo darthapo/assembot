@@ -146,16 +146,6 @@ addJsConvertor '.eco', 'eco', (eco)->
 
 addJsConvertor ['.mustache'], ['coffee-templates'], (coffee_templates)-> 
   (source, opts, converted)->
-
-    # output= if opts.current_file.ext.indexOf('coffee') > 0
-    #   # this branch isn't working...
-    #   code= coffee.compile( source, bare:yes )
-    #   # _.puts "CODE:"
-    #   # _.pp code
-    #   eng= new coffee_templates format: true, handlebars: true
-    #   coffee_templates.compile eval("function(){#{ code }}")
-    # else
-    #   coffee_templates.compile source
     output= coffee_templates.compile source
     converted null, """module.exports= #{output};""", opts
 

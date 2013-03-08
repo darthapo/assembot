@@ -37,29 +37,29 @@ If you want to configure it via package.json, just add an `assembot` section to 
 
 If you've not installed it globally, then you'll need to add it as a dependency to your project, then:
 
-    npm install
+    npm install assembot --save
     ./node_modules/.bin/assembot --build
 
 
 ## Transpiler Support
 
-AssemBot will try to enable support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.dot`, `.ejs`, `.less`, `.styl` files and more. It will also assemble `.css`, `.js`, and `.html` files. Any `.html` files become a module that exports the contents of the file as a string. Stylus support will attempt to enable Nib by default as well.
+AssemBot initially enables support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.dot`, `.ejs`, `.less`, and `.styl` files. When using stylus, it will attempt to enable Nib by default as well.
 
 ## Token Replacement
 
 In your sources files you can embed data defined in your `package.json` file by using a special token syntax: `{%- package.author -%}`
 
-If you have `replaceTokens` set to `true`, AssemBot will attempt to replace all tokens in your sources files. It is enabled by default.
+AssemBot will attempt to replace all tokens in your sources files. To disable this behavior, set `replaceTokens` to `false`.
 
 ## Embedded CSS
 
-Supports compiling CSS into the JS package. Use `.ecss` (or `.estyl` or `.eless`) file extension. Generates a method module you can use like this:
+Supports compiling CSS into the JS package. Use `.ecss` (or `.estyl` or `.eless`) file extension. Generates a module you can use like this:
 
 ```coffeescript
 require('my/view/styles').activate()
-# Module supports
-#  .activate()   - Appends a <style> tag to HEAD, BODY, or document
-#  .deactivate() - Removes <styles> tag
+# EmbeddCSS API:
+#  .activate()   - Appends a generated <style> tag to HEAD, BODY, or document
+#  .deactivate() - Removes the generated <style> tag
 #  .isActive()   - Boolean 
 ```
 

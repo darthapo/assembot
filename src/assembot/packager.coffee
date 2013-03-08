@@ -1,7 +1,7 @@
 
 css_package= (resources, options, callback)->
   results= ""
-  resources.eachForTarget 'css', (res)->
+  for res in resources
     results += "/* #{ res.path } */\n"
     results += res.content
     results += "\n\n"
@@ -103,7 +103,7 @@ js_package= (resources, options, callback)->
       return this.#{identifier}.define;
     }).call(this)({\n
   """
-  resources.eachForTarget 'js', (res, i)->
+  for res,i in resources
     result += if i is 0 then "" else ",\n"
     result += JSON.stringify res.path
     result += ": function(exports, require, module) {\n#{ res.content }\n}"

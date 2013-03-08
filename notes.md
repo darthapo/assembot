@@ -1,43 +1,43 @@
 # AssemBot Notes
 
-## Version 0.2 - The Clean Up
-
-```coffeescript
-assembot= require 'assembot'
-
-package= assembot 'output.js', source:'./source'
-
-package.build (err, content)->
-	# Assembled, possibly minified, content
-
-package.filelist (err, files)->
-	# Array of files included in package
-
-package.set name:'value'
-```
-
-Plugins for build, server, other?
-
-Have a 'content' object that represents the sourcetree
+Add support for components (bower)
 
 ```
 {
-	"file.js": "FILE CONTENTS HERE......",
-	"dir/file2.coffee": "CONTENT HERE"
+	"assembot": {
+		"options": {
+
+		},
+		"package": {
+			"./source": {
+				js: "./public/app.js",
+				css: "./public/theme.css",
+				components: [
+					"jquery",
+					"backbone"
+				]
+			}
+		}
+	}
 }
 ```
 
-Should it have more meta?
+Goes through and loads "./components/{COMPONENT}/component.json" and adds the
+main.js (or main.css for css packages) to "components/{COMPONENT}" is output
+package.
 
-```javascript
+```
 {
-	"file.coffee", {
-		disabled: false, // set to true to skip it from including in package
-		target:  "js",
-		type: "coffee",
-		path: "file", // module path
-		source: "/full/path/to/source/file.coffee",
-		content: "FILE CONTENTS HERE"
+	"assembot": {
+		"options": {
+
+		},
+		"targets": {
+			"public/app.js": {
+				"source": ["./source", "./components"],
+				"exclude": "./source/test/**"
+			}
+		}
 	}
 }
 ```
@@ -46,3 +46,4 @@ Should it have more meta?
 
 - Terminology
 	- Change all the `config` and `info` strewn about into `target`.
+
