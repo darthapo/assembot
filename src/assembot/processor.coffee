@@ -2,6 +2,8 @@ _= require './util'
 log= require './log'
 path= require 'path'
 async= require 'async'
+notify= require './notify'
+
 project_root= process.cwd()
 assembot_package= require '../../package'
 project_package= try
@@ -25,11 +27,15 @@ validTarget= (filepath)->
   targetOf(filepath) isnt 'unknown'
 
 render= (resources, options, done)->
-  log.debug "Rendering #{ resources[0].target } resources:"
-  if options.replaceTokens
-    for res in resources
-      res.content= replaceTokens res.content, options
-  t= (r,cb)-> transpile r, options, cb
+  if resources.length is 0
+    log.debug "Rendering 0 resources"
+    return done()
+  else
+    log.debug "Rendering #{ resources[0].target } resources:"
+  t= (r,cb)-> 
+    notify.beforeRenderItem r
+    r.content= replaceTokens(r.content, options) if options.replaceTokens
+    transpile r, options, cb
   async.each resources, t, (err, rest)->
     throw err if err?
     done(err)
@@ -41,7 +47,7 @@ transpile= (resource, options, done)->
 tokenParser= /(\{%\-([ a-zA-Z0-9\._]*)\-%\})/g
 
 replaceTokens= (string, context)->
-  if context.replaceTokens and tokenParser.test(string)
+  if tokenParser.test(string)
     string.replace tokenParser, (match, token, value, loc, src)->
       data= context
       parts= value.split('.')
@@ -64,7 +70,7 @@ replaceTokens= (string, context)->
 addProcessor= (type)->
   new Processor(type)
 
-module.exports= {targetOf, validTarget, render, transpile, replaceTokens, addProcessor}
+module.exports= {targetOf, validTarget, render, transpile, replaceTokens, addProcessor, Processor, ProcessorManager}
 
 
 class ProcessorManager
@@ -91,7 +97,9 @@ class ProcessorManager
       @processorsByExt[ext]= processor
     @
 
-manager= new ProcessorManager
+  @instance: new @
+
+manager= ProcessorManager.instance
 
 class Processor
   constructor: (@type)->
@@ -102,7 +110,6 @@ class Processor
     @converter= null
     @builder= null
 
-  # definiition api
   ext: (exts...)->
     for ext in exts
       if ext[0] is '.'
@@ -110,41 +117,50 @@ class Processor
       else
         @extensions.push ".#{ ext }"
     @
+  
   requires: (reqs...)->
     @requiredLibs= reqs
     @
+  
   warn: (msg)->
     @warning= msg
     @
+
   build: (builder)->
     @builder= if @warning?
       warning= @warning
       (args...)->
-        log.info warning
+        log.info "   NOTE:", warning
         builder(args...)
     else
       builder
     manager.register(@)
+    if @requiredLibs.length is 0
+      @initialize()
     @
+
+  # Rendering logic:
 
   initialize: ->
     return if @loading
     @loading= true
     _.tryRequireAll @requiredLibs, (err, libs)=>
+      throw err if err?
       @converter= @builder.apply @builder, libs
       for queued in @renderQueue
         @render.apply @, queued
       @renderQueue=[]
+      @loading= false
   
-  # Rendering logic:
   render: (res, opts, done)->
     if @converter?
       log.debug " -", res.path
       o= _.defaults {}, current_file:res, opts
       try
         @converter res.content, o, (err, content)->
-          done err if err?
+          return done err if err?
           res.content= content
+          notify.afterRenderItem res
           done err, res
       catch ex
         file= "#{ res.path }#{ res.ext }"
@@ -153,12 +169,9 @@ class Processor
         log.error ex.message
         done ex, null, opts
     else
-      log.debug " |", res.path, "(queued)"
+      log.trace " |", res.path, "(queued)"
       @renderQueue.push [res, opts, done]
       @initialize()
-
-    # done()
-
 
 ###
   Default Processors:
@@ -175,7 +188,7 @@ addProcessor('js').ext('.html')
     converted null, """module.exports=#{JSON.stringify source};""", opts
 
 # JSON
-addProcessor().ext('.json')
+addProcessor('js').ext('.json')
   .build -> (source, opts, converted)->
     data= JSON.parse source
     converted null, """module.exports=#{JSON.stringify data};""", opts
@@ -220,7 +233,7 @@ addProcessor('js').ext('.dot')
     converted null, """module.exports= #{ output.toString() }""", opts
 
 # MARKDOWN
-addProcessor('js').ext('.md', 'markdown')
+addProcessor('js').ext('.md', '.markdown')
   .requires('marked')
   .build (marked)-> (source, opts, converted)->
     options= _.defaults {}, (opts.marked || {}),
@@ -235,16 +248,16 @@ addProcessor('js').ext('.md', 'markdown')
 
 # Be aware: These require a runtime component...
 
-# SETTEE
-addProcessor('js').ext('.settee')
-  .requires('settee-templates')
-  .warn("Settee requires a runtime, be sure it's included in your page.")
-  .build (settee)-> (source, opts, converted)->
-    output= """
-      if(!this.settee) settee= require('settee');
-      module.exports=settee(#{ settee.precompile(source) });
-    """
-    converted null, output, opts
+# # SETTEE MOVED TO PLUGIN!
+# addProcessor('js').ext('.settee')
+#   .requires('settee-templates')
+#   .warn("Settee requires a runtime, be sure it's included in your page.")
+#   .build (settee)-> (source, opts, converted)->
+#     output= """
+#       if(!this.settee) settee= require('settee');
+#       module.exports=settee(#{ settee.precompile(source) });
+#     """
+#     converted null, output, opts
 
 # JADE
 addProcessor('js').ext('.jade')

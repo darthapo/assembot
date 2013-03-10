@@ -4,12 +4,14 @@ defaults= require './defaults'
 _= require './util'
 path= require 'path'
 packager= require './packager'
+plugins= require './plugins'
 processor= require './processor'
 project_root= process.cwd()
 {resourcelist}= require './resources'
 {assembler}= require './assembler'
 {Bot}= require './bot'
 
+loaded_from= null
 
 loadFirstLocalPackage= (names...)->
   for name in names
@@ -17,12 +19,14 @@ loadFirstLocalPackage= (names...)->
       data= require "#{ project_root }#{ path.sep }#{ name }"
       if data.assembot?
         log.debug "Loaded #{ name }.json"
+        loaded_from= name
         return data.assembot
       else
         throw new Error "No Assembot block"
     catch ex
       log.debug "No '#{ name }.json' file found!"
   log.debug "No configuration found, using defaults!"
+  loaded_from= 'defaults'
   defaults
 
 loadTargets= ->
@@ -35,11 +39,34 @@ loadTargets= ->
     targets[tgt]= tgt_opts
   targets
 
-loadOptions= ->
+loadOptions= (returnDefaults)->
   nfo= loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
-  nfo.options ? defaults.options
+  if returnDefaults is false
+    if nfo is defaults
+      return null
+    else
+      loaded_from
+  else
+    nfo.options ? defaults.options
   
 assembot= (target, options={})->
+  plugins.init(
+    options
+    './plugins/header'
+    './plugins/minify'
+    './plugins/settee-templates'
+  )
   new Bot target, options
   
-module.exports={assembot, defaults, assembler, resourcelist, loadTargets, packager, processor, loadOptions}
+module.exports= {
+  assembot
+  defaults
+  assembler
+  resourcelist
+  loadTargets
+  packager
+  processor
+  loadOptions
+  loadFirstLocalPackage
+  _
+}

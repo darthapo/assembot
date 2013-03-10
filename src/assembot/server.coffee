@@ -3,53 +3,61 @@ fs= require 'fs'
 log= require './log'
 path= require 'path'
 express= require 'express'
+notify= require './notify'
+{test}= require 'shelljs'
 {assembot, loadOptions}= require './index'
 
+project_root= process.cwd()
+
+build_middleware= (bots, config)->
+  {paths}= config
+  bot_by_path= {}
+  bot_by_path[bot.output]= bot for bot in bots
+
+  bot_for= (url)->
+    for uri, filepath in paths
+      localpath= path.resolve path.join(filepath, url)
+      if bot= bot_by_path[localpath]
+        return bot
+    return false
+
+  (req, res, next)->
+    url= req.url?[1..] # strip the leading /
+    if bot= bot_for url
+      log.info "Rebuilding:", bot.target
+      bot.build (content)-> 
+        contentType= switch bot.target
+          when 'js' then 'application/javascript'
+          when 'css' then 'text/css'
+          else 'text/html'
+        res.set 'Content-Type', contentType
+        res.send 200, content
+    else
+      next()
+
+
 exports.start= (bots, options)->
-  log.info "Starting server... (coming soon)"
-# express= require 'express'
-# fs= require 'fs'
-# path= require 'path'
-# builder= require './builder'
-# {puts, print, inspect}= require './util'
+  log.debug "Configuration"
+  conf= options.http
+  app= express()
 
-# getConfigFor= (path, info)->
-#   for output, config of info
-#     unless config.text is 'meta'
-#       return config if config.output.path is path
+  log.debug conf
+  # log.debug bots
+  log.info "Serving", bots.length, "packages..."
 
-# exports.serve= (config, opts={})->
-#   puts "Setting up dev server..."
-#   targets= builder.buildTargets(config, yes)
-#   app= express()
-#   port= config.port || opts.port || 8080
-#   project_root= process.cwd()
-#   root= path.resolve (opts.wwwRoot || config.wwwRoot || "#{ project_root }/public")
-#   puts "  root: #{root}"
-#   puts "  port: #{port}"
+  notify.createServer app, options
 
-#   app.get '/*', (req, res)->
-#     uri= req.params[0] || 'index.html'
-#     localpath= path.join(root, uri)
-#     if targets.indexOf(localpath) >= 0
-#       conf = getConfigFor localpath, config
-#       builder.buildTarget conf, (err, content)->
-#         if err?
-#           res.send 500, String(err)
-#         else
-#           res.send 200, content
-#     else
-#       if fs.existsSync localpath
-#         res.sendfile localpath
-#       else
-#         res.send 404, "Not Found"
+  app.use express.errorHandler( dumpExceptions:yes, showStack:yes )
+  app.use express.logger()
+  app.use build_middleware(bots, conf)
 
-#   # app.use express.static(root)
-#   app.use express.errorHandler(
-#     dumpExceptions: true
-#     showStack: true
-#   )
+  log.info "Mounting paths:"
+  for uri, filepath of conf.paths
+    log.info "  #{ uri } -> #{ filepath }"
+    app.use uri, express.static(filepath)
 
-#   app.listen(port)
-#   puts " Ready! Visit http://127.0.0.1:#{ port }"
-#   
+  notify.startServer app, options
+
+  app.listen(conf.port)
+  log.info " Ready! Visit http://127.0.0.1:#{ conf.port }"
+

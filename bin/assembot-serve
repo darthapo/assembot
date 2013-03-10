@@ -1,1 +1,28 @@
 #!/usr/bin/env coffee
+
+cli= require 'commander'
+pkg= require '../package'
+log= require '../lib/assembot/log'
+server= require '../lib/assembot/server'
+defaults= require '../lib/assembot/defaults'
+{assembot, _, loadTargets, loadOptions}= require '../lib/assembot'
+# {puts, pp}= _
+
+cli
+  .version(pkg.version)
+  .option('-v, --verbose', 'force installation')
+  .option('-q, --quiet', 'force installation')
+  .option('-p, --port <n>', 'server port', parseInt)
+  .parse(process.argv);
+
+log.level 0 if cli.quiet
+log.level 2 if cli.verbose
+
+log.info ''
+
+bot_list= for target, options of loadTargets()
+  assembot target, options
+
+options= _.defaults loadOptions(), http:{ port:cli.port }, defaults.options
+
+server.start bot_list, options

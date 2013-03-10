@@ -3,11 +3,14 @@ module.exports=
   options:
     
     header: "/* Assembled by AssemBot {%- assembot.version -%} */"
-    sourceMap: no
+    addHeader: true
+    # sourceMap: no # NOT SUPPORT YET
     minify: 0 # 0=none, 1=minify, 2=mangle
     ident: 'require'
     autoLoad: null
     replaceTokens: yes
+    
+    plugins: []
 
     coffee:
       bare: yes # precedence: 0

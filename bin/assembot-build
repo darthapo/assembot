@@ -4,7 +4,6 @@ cli= require 'commander'
 pkg= require '../package'
 {assembot, _, loadTargets}= require '../lib/assembot'
 log= require '../lib/assembot/log'
-# {puts, pp}= _
 
 cli
   .version(pkg.version)
@@ -18,38 +17,19 @@ log.level 2 if cli.verbose
 log.info ''
 log.info "Building..."
 
-for target, options of loadTargets()
-  log.info "Target:", target
-  log.debug "Configuration:"
-  log.debug options
-  bot= assembot target, options
-  bot.build() #(err, content)->
-    # log.info "RETURNED"
-    # log.info content
-  log.debug ''
-  
+targets = []
 
-# # pp bot
+targets.push {target, options} for target, options of loadTargets()
 
-# bot.build 'js', (err, content)->
-#   puts "Built!"
-#   # pp content
-#   pp bot
+buildIt= ->
+  if targets.length is 0
+    log.info "Done"
+  else
+    {target, options}= targets.shift()
+    log.debug "Target:", target
+    log.debug "Configuration:"
+    log.debug options
+    bot= assembot target, options
+    bot.build().then buildIt
 
-
-
-
-
-# // var pkgs = program.args;
-
-# // if (!pkgs.length) {
-# //   console.error('packages required');
-# //   process.exit(1);
-# // }
-
-# // console.log();
-# // if (program.force) console.log('  force: install');
-# // pkgs.forEach(function(pkg){
-# //   console.log('  install : %s', pkg);
-# // });
-# // console.log();
+buildIt()

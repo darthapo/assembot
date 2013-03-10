@@ -1,14 +1,29 @@
 
-css_package= (resources, options, callback)->
+build= (target, resources, options, done)->
+  packager= packagers[target]
+  return done new Error("Unknown package target '#{ target }'") unless packager?
+  packager(resources, options, done)
+
+packagers={}
+
+# Hack for now... Need to have a better manager
+addPackager= (target, packager)->
+  packagers[target]= packager
+
+
+module.exports= {build, addPackager}
+
+
+addPackager 'css', (resources, options, done)->
   results= ""
   for res in resources
     results += "/* #{ res.path } */\n"
     results += res.content
     results += "\n\n"
-  callback null, results
+  done null, results
 
-exports.css= css_package
 
+# Need to find a better home for this!
 ecss_wrapper= (css)->
   """
   var node = null, css = #{ JSON.stringify css };
@@ -32,10 +47,10 @@ ecss_wrapper= (css)->
     }
   };
   """
+module.exports.embedded_css= ecss_wrapper
 
-exports.embedded_css= ecss_wrapper
 
-js_package= (resources, options, callback)->
+addPackager 'js', (resources, options, callback)->
   identifier= options.ident ? 'require' 
   autoStart= options.autoStart ? false
   result = """
@@ -113,5 +128,3 @@ js_package= (resources, options, callback)->
   result += "#{identifier}('#{autoStart}');\n" if autoStart
 
   callback null, result
-
-exports.js= js_package

@@ -4,12 +4,19 @@ level= (lvl)->
   log_level= lvl if lvl?
   log_level
 
+say= ->
+  console.log.apply console, arguments
+
 info= ->
   return if log_level < 1
   console.log.apply console, arguments
 
 debug= ->
   return if log_level < 2
+  console.log.apply console, arguments
+
+trace= ->
+  return if log_level < 3
   console.log.apply console, arguments
 
 error= ->
@@ -19,4 +26,4 @@ error= ->
     console.log "Error", lines[2].trim()
   console.log.apply console, arguments
 
-module.exports= {level, info, debug, error}
+module.exports= {level, info, debug, error, trace, say}

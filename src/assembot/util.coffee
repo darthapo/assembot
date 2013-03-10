@@ -1,7 +1,8 @@
 util= require 'util'
 fs= require 'fs'
+{exec}= require 'shelljs'
 path= require 'path'
-{spawn, exec}= require 'child_process'
+# {spawn, exec}= require 'child_process'
 
 pp= (obj)-> 
   util.puts util.inspect obj
@@ -12,13 +13,16 @@ extend= (obj)->
       for key,value of source
         obj[key]= value
   obj
-      
+
+# Merge deeper objects? 
 defaults= (obj)->
   for source in Array::slice.call(arguments, 1)
     if source
       for key,value of source
         unless obj[key]?
           obj[key]= value
+        else if type(obj[key]) is 'object'
+          obj[key]= defaults {}, obj[key], value
   obj
 
 type= do ->
@@ -28,7 +32,7 @@ type= do ->
   for name in "Boolean Number String Function Array Date RegExp Undefined Null NodeList".split(" ")
     classToType["[object " + name + "]"] = name.toLowerCase()
   (obj) ->
-    strType = toStr.call(obj)
+    strType= toStr.call(obj)
     if found= classToType[strType]
       found
     else if found= strType.match(elemParser)
@@ -36,49 +40,23 @@ type= do ->
     else
       "object"
 
-# walk= (dir, done)->
-#   results= []
-#   fs.readdir dir, (err, list)->
-#     return done(err) if err?
-#     pending = list.length
-#     return done(null, results) unless pending
-#     list.forEach (file)->
-#       filepath = "#{ dir }#{ path.sep }#{ file }"
-#       fs.stat filepath, (err, stat)->
-#         if stat.isDirectory()
-#           walk filepath, (err, res)->
-#             results= results.concat(res)
-#             done(null, results) if (!--pending)
-#         else
-#           results.push(filepath)
-#           done(null, results) if (!--pending)
-#     null
-
-# walkSync= (dir, callback, files_only=yes)->
-#   file_list= fs.readdirSync dir
-#   for filename in file_list
-#     fullpath= [dir, filename].join path.sep
-#     stat= fs.statSync fullpath
-#     if stat.isDirectory()
-#       callback fullpath, filename, true unless files_only
-#       walkSync fullpath, callback
-#     else
-#       callback fullpath, filename, false
-#   file_list
-
 validateOptionsCallback= (options, callback)->
   if typeof options is 'function'
     [{}, options]
   else
     [options, callback]
 
+tryRequireResolve= (name, callback)->
+  try
+    path= require.resolve name
+    callback null, path
+  catch ex
+    localResolve name, callback
+
+
 tryRequire= (name, callback)->
-  if name is null or name is ''
-    callback null, {} 
-    return
-  if loaded_libs[name]? 
-    callback null, loaded_libs[name]
-    return
+  return callback(null, {}) if name is null or name is ''
+  return callback(null, loaded_libs[name]) if loaded_libs[name]? 
   try
     lib= require name
     loaded_libs[name]= lib
@@ -87,23 +65,16 @@ tryRequire= (name, callback)->
     localRequire name, callback
 
 tryRequireAll= (names, callback)->
-  if names.length is 0
-    callback(null, [])
-    return
+  return callback(null, []) if names.length is 0
   libs=[]
   libnames= names.slice()
   nextLib= libnames.shift()
   loader= (err, lib)->
-    if err?
-      callback err, null
-    else
-      libs.push lib
-      if libnames.length is 0
-        callback null, libs
-      else
-        nextLib= libnames.shift()
-        tryRequire nextLib, loader
-
+    return callback err, null if err?
+    libs.push lib
+    return callback null, libs if libnames.length is 0
+    nextLib= libnames.shift()
+    tryRequire nextLib, loader
   tryRequire nextLib, loader
 
 loaded_libs= {}
@@ -121,25 +92,36 @@ isAlreadyLoaded= (name, callback)->
     loading_now[name].push callback
     false
 
+localResolve= (name, callback)->
+  cmd= "#{process.execPath} -p -e \"require.resolve('#{ name }')\""
+  result= exec(cmd, silent:yes)
+  libpath= result.output.trim()
+  if result.code != 0 or libpath is ''
+    callback new Error("Could not load '#{name}' module. (no local path)")
+  else
+    callback null, libpath
+
 localRequire= (name, callback)->
   return false if isAlreadyLoaded(name, callback)
-  cmd= "#{process.execPath} -p -e \"require.resolve('#{ name }')\""
-  child= exec cmd, (stdin, stdout, stderr)->
-    libpath= stdout.trim()
-    if libpath is ''
-      err= new Error("Could not load '#{name}' module. (no local path)")
-      for cb in loading_now[name]
-        cb err, null
-    else
+  if name[..1] is './'
+    libpath= path.resolve(name)
+    try
+      lib= require libpath
+      loaded_libs[name]= lib
+      cb null, lib for cb in loading_now[name]
+    catch ex
+      cb ex, null for cb in loading_now[name]
+    delete loading_now[name]
+  else
+    localResolve name, (err, libpath)->
+      return (cb err, null for cb in loading_now[name]) if err?
       try
         lib= require libpath
         loaded_libs[name]= lib
-        for cb in loading_now[name]
-          cb null, lib
+        cb null, lib for cb in loading_now[name]
       catch ex
-        for cb in loading_now[name]
-          cb ex, null
-    delete loading_now[name]
+        cb ex, null for cb in loading_now[name]
+      delete loading_now[name]
   true
 
 
@@ -151,6 +133,7 @@ module.exports= {
   validateOptionsCallback
   tryRequire
   tryRequireAll
+  tryRequireResolve
   localRequire
 }
 

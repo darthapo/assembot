@@ -1,12 +1,33 @@
 #!/usr/bin/env coffee
 
-{assembot, _}= require '../lib/assembot'
-{puts, pp}= _
+cli= require 'commander'
+pkg= require '../package'
+{assembot, _, loadTargets}= require '../lib/assembot'
+log= require '../lib/assembot/log'
 
-puts ''
+cli
+  .version(pkg.version)
+  .parse(process.argv);
 
-puts "Configuration"
+# Show everything!
+log.level 3
 
-bot= assembot './source'
+log.info ''
+log.info "Building..."
 
-pp bot
+targets = []
+
+targets.push {target, options} for target, options of loadTargets()
+
+buildIt= ->
+  if targets.length is 0
+    log.info "Done"
+  else
+    {target, options}= targets.shift()
+    log.debug "Target:", target
+    log.debug "Configuration:"
+    log.debug options
+    bot= assembot target, options
+    bot.build().then buildIt
+
+buildIt()
