@@ -9,9 +9,9 @@ cli
   .version(pkg.version)
   .command('build', 'Builds target package(s)')
   .command('serve', 'Starts dev server')
-  # .command('new [PROJECT]', 'Create a new project')
+  .command('new [project]', 'Create a new project')
   .command('init', 'Creates a configuration file, if missing')
-  .command('info', 'Show information about build')
+  # .command('info', 'Show information about build')
   # .command('debug', 'Show debug information')
   .parse(process.argv)
 
