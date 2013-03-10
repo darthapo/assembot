@@ -9,6 +9,7 @@ cli
   .version(pkg.version)
   .option('-v, --verbose', 'force installation')
   .option('-q, --quiet', 'force installation')
+  .option('-t, --target <filepath>', 'build specified target only')
   .parse(process.argv);
 
 log.level 0 if cli.quiet
@@ -17,19 +18,30 @@ log.level 2 if cli.verbose
 log.info ''
 log.info "Building..."
 
-targets = []
+all_targets= loadTargets()
+targets= []
 
-targets.push {target, options} for target, options of loadTargets()
-
-buildIt= ->
-  if targets.length is 0
-    log.info "Done"
+if cli.target?
+  if options= all_targets[cli.target]
+    log.info " only #{ cli.target }:"
+    bot= assembot cli.target, options
+    bot.build().then ->
+      log.info "Done"
   else
-    {target, options}= targets.shift()
-    log.debug "Target:", target
-    log.debug "Configuration:"
-    log.debug options
-    bot= assembot target, options
-    bot.build().then buildIt
+    log.say "Target '#{ cli.target }' not found."
 
-buildIt()
+else
+  targets.push {target, options} for target, options of all_targets
+
+  buildIt= ->
+    if targets.length is 0
+      log.info "Done"
+    else
+      {target, options}= targets.shift()
+      log.debug "Target:", target
+      log.debug "Configuration:"
+      log.debug options
+      bot= assembot target, options
+      bot.build().then buildIt
+
+  buildIt()

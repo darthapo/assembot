@@ -1,21 +1,7 @@
 # AssemBot Notes/Todos
 
-- Add support for loading plugins from `assembot` block.
 - Add support for excluding files from build (relative to source root).
-- Add support for lifecyle events (good for plugin integration). All lifecycle
-  events would send the current `bot` instance as the first parameter. It should
-  emit a before/after event for each of these:
-  
-  	- scan
-  	- renderItem
-  	- render
-  	- assemble
-  	- write (or callback)
-
-	Add listeners to `Assembot` class itself:
-
-		AssemBot.on 'before:renderItem', (bot, resource)->
-			# Do something with resource here...
+- Add mocha setup and test to new project template.
 
 Example:
 
@@ -36,6 +22,8 @@ Example:
 ```
 
 ## Ideas
+
+- Add a setting for auto activating any embedded css. Should it just do everything, or selectively?
 
 - Move from processors overwriting `resource.content` to having a 
   second property: `resource.rendered`. Default processors would 

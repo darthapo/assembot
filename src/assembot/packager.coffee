@@ -52,7 +52,7 @@ module.exports.embedded_css= ecss_wrapper
 
 addPackager 'js', (resources, options, callback)->
   identifier= options.ident ? 'require' 
-  autoStart= options.autoStart ? false
+  autoStart= options.autoStart ? options.autoLoad ? false
   result = """
     (function(/*! Stitched by Assembot !*/) {
       /* 
