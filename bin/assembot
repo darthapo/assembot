@@ -12,7 +12,7 @@ cli
   # .command('new [PROJECT]', 'Create a new project')
   .command('init', 'Creates a configuration file, if missing')
   .command('info', 'Show information about build')
-  .command('debug', 'Show debug information')
+  # .command('debug', 'Show debug information')
   .parse(process.argv)
 
 log= require '../lib/assembot/log'

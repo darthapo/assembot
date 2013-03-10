@@ -12,8 +12,7 @@
     "assembot-info": "./bin/assembot-info",
     "assembot-init": "./bin/assembot-init",
     "assembot-new": "./bin/assembot-new",
-    "assembot-serve": "./bin/assembot-serve",
-    "oldassembot": "./bin/oldassembot"
+    "assembot-serve": "./bin/assembot-serve"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
