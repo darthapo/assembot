@@ -32,29 +32,32 @@ class ResourceList
     reslist
 
   constructor: ()->
-    @tree= {}
+    @list= []
     @length= 0
 
   each: (callback)->
-    i=0
-    callback resource, i++ for key, resource of @tree
+    for resource,i in @list
+      callback resource, i
     @
 
   forTarget: (target)->
-    resource for key, resource of @tree when resource.target is target
+    resource for resource in @list when resource.target is target
 
   eachForTarget: (target, callback)->
-    i=0
-    for key, resource of @tree
-      callback resource, i++ if resource.target is target
+    callback resources, i for resource, i in @forTarget(target)
     @
 
   add: (resource)->
-    if @tree[resource.path]?
-      log.info "Warning: redefining module '#{ resource.path }'"
-    @tree[resource.path]= resource
+    @list.push resource
     @length += 1
     @
+
+  treeForTarget: (target)->
+    tree={}
+    for resource in @forTarget(target)
+      tree[resource.path]= resource
+    tree
+
 
 resourcelist= (filepath)->
   ResourceList.fromPath filepath

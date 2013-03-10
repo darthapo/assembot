@@ -14,8 +14,11 @@ build_middleware= (bots, config)->
   bot_by_path= {}
   bot_by_path[bot.output]= bot for bot in bots
 
+  # log.info "Paths", paths
+  # log.info "BotsByPath", bot_by_path
+
   bot_for= (url)->
-    for uri, filepath in paths
+    for uri, filepath of paths
       localpath= path.resolve path.join(filepath, url)
       if bot= bot_by_path[localpath]
         return bot
@@ -33,6 +36,7 @@ build_middleware= (bots, config)->
         res.set 'Content-Type', contentType
         res.send 200, content
     else
+      # log.info "Not a package target:", url, bot
       next()
 
 

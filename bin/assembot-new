@@ -35,13 +35,87 @@ build_project= (name)->
   else
     log.say "create: #{ name }"
     mkdir projectpath
+
     cd projectpath
+
     log.say "create: #{ name }/source"
     mkdir "source"
+    
+    log.say "create: #{ name }/source/main.coffee"
+    content.mainCoffee.replace(/APPNAME/g, name).to "source/main.coffee"
+    
+    log.say "create: #{ name }/source/main.styl"
+    content.mainStylus.replace(/APPNAME/g, name).to "source/main.styl"
+    
     log.say "create: #{ name }/public"
     mkdir "public"
+
     log.say "create: #{ name }/public/index.html"
-    """<!DOCTYPE html>
+    content.indexHtml.replace(/APPNAME/g, name).to "public/index.html"
+    
+    log.say "create: #{ name }/notes"
+    mkdir "notes"
+
+    log.say "create: #{ name }/notes/ideas.md"
+    content.ideas.replace(/APPNAME/g, name).to "notes/ideas.md"
+
+    log.say "create: #{ name }/notes/todos.md"
+    content.todos.replace(/APPNAME/g, name).to "notes/todos.md"
+
+    log.say "create: #{ name }/.gitignore"
+    "node_modules".to('.gitignore')
+    
+    log.say "create: #{ name }/readme.md"
+    content.readme.replace(/APPNAME/g, name).to "readme.md"
+    
+    proc = spawn("assembot", ["init"], { stdio: 'inherit', customFds: [0, 1, 2] })
+    proc.on('exit', (code)->
+      if (code == 127)
+        console.error("An error occured with `assembot init`, you'll have to run it yourself.");
+    )
+
+content=
+  readme: """
+    # APPNAME
+
+    ## Install
+
+        npm install APPNAME
+
+    ## Usage
+
+    Yeah, you should probably say a few words about APPNAME here.
+    """
+
+  mainCoffee: """
+    # APPNAME main
+
+    console.log "Ready."
+    """
+
+  mainStylus: """
+    // APPNAME
+    @import 'nib'
+
+    global-reset()
+
+    body
+      font-family "Helvetica Neue", Helvetica, Sans-Serif
+    """
+
+  ideas: """
+    # APPNAME Ideas
+    - Do cool stuff!
+    """
+
+  todos: """
+    # APPNAME Todos
+    - Write docs
+    - Flesh out readme.md
+    - Release APPNAME!
+    """
+
+  indexHtml: """<!DOCTYPE html>
     <html lang="en"  class="nojs">
       <head>
         <meta charset="utf-8" />
@@ -52,27 +126,7 @@ build_project= (name)->
         Loading...
       </body>
       <script src="app.js"></script>
-    </html>""".to "public/index.html"
-    # exec "touch public/index.html"
-    log.say "create: #{ name }/notes"
-    mkdir "notes"
-    log.say "create: #{ name }/ideas.md"
-    exec "touch notes/ideas.md"
-    log.say "create: #{ name }/todos.md"
-    exec "touch notes/todos.md"
-    log.say "create: #{ name }/.gitignore"
-    "node_modules".to('.gitignore')
-    log.say "create: #{ name }/readme.md"
-    exec "touch readme.md"
-    # exec "assembot init", async:yes
-    # proc = spawn("assembot", ["init"], { stdio: 'inherit', customFds: [0, 1, 2] })
-    proc = spawn("assembot", ["init"], { stdio: 'inherit', customFds: [0, 1, 2] })
-    proc.on('exit', (code)->
-      if (code == 127)
-        console.error("An error occured with `assembot init`, you'll have to run it yourself.");
-    )
-
-
+    </html>"""
 
 cli
   .parse(process.argv);
