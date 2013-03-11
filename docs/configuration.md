@@ -14,7 +14,7 @@ Then just follow the on screen instructions.
 
 ## Example
 
-At it's simplest, your configuration can look like this:
+At its simplest, your configuration can look like this:
 
 ```json
 {

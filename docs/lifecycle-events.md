@@ -7,7 +7,7 @@
 - assemble
 - write
 
-The each emit a `before:` and `after:` event. So the flow of events in a build looks like this:
+They each emit a `before:` and `after:` event. So the flow of events in a build looks like this:
 
 - before:build - (bot)
 - before:scan - (bot)
