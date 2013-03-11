@@ -1,8 +1,8 @@
 #!/usr/bin/env coffee
 path= require 'path'
-_= require '../lib/assembot/util'
+_= require '../lib/util'
 
-{ResourceList}=require '../lib/assembot/resources'
+{ResourceList}=require '../lib/resources'
 
 _.puts "Coming soon..."
 

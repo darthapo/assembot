@@ -15,7 +15,7 @@ cli
   # .command('debug', 'Show debug information')
   .parse(process.argv)
 
-log= require '../lib/assembot/log'
+log= require '../lib/log'
 
 log.level 2 if cli.verbose
 log.level 0 if cli.quiet

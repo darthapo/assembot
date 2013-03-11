@@ -1,6 +1,6 @@
 # it 'should ', ->
 
-{Resource, ResourceList, resourcelist}= require '../lib/assembot/resources'
+{Resource, ResourceList, resourcelist}= require '../lib/resources'
 {expect}= chai= require 'chai'
 should= chai.should()
 

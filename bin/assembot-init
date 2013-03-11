@@ -1,12 +1,12 @@
 #!/usr/bin/env coffee
-_= require '../lib/assembot/util'
+_= require '../lib/util'
 cli= require 'commander'
 pkg= require '../package'
-log= require '../lib/assembot/log'
-defaults= require '../lib/assembot/defaults'
+log= require '../lib/log'
+defaults= require '../lib/defaults'
 path= require 'path'
 {test, cat}= require 'shelljs'
-{loadOptions}= require '../lib/assembot'
+{loadOptions}= require '../lib/index'
 # {puts, pp}= _
 
 cli

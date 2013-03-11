@@ -5,7 +5,7 @@ async= require 'async'
 notify= require './notify'
 
 project_root= process.cwd()
-assembot_package= require '../../package'
+assembot_package= require '../package'
 project_package= try
     require "#{project_root}#{path.sep}package"
   catch ex

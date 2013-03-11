@@ -2,8 +2,8 @@
 
 cli= require 'commander'
 pkg= require '../package'
-{assembot, _, loadTargets}= require '../lib/assembot'
-log= require '../lib/assembot/log'
+{assembot, _, loadTargets}= require '../lib/index'
+log= require '../lib/log'
 
 cli
   .version(pkg.version)

@@ -2,10 +2,10 @@
 
 cli= require 'commander'
 pkg= require '../package'
-log= require '../lib/assembot/log'
-server= require '../lib/assembot/server'
-defaults= require '../lib/assembot/defaults'
-{assembot, _, loadTargets, loadOptions}= require '../lib/assembot'
+log= require '../lib/log'
+server= require '../lib/server'
+defaults= require '../lib/defaults'
+{assembot, _, loadTargets, loadOptions}= require '../lib/index'
 # {puts, pp}= _
 
 cli
