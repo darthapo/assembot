@@ -21,6 +21,7 @@ targets.push {target, options} for target, options of loadTargets()
 
 buildIt= ->
   if targets.length is 0
+    notify.emit 'done'
     log.info "Done"
   else
     {target, options}= targets.shift()

@@ -4,6 +4,7 @@ cli= require 'commander'
 pkg= require '../package'
 {assembot, _, loadTargets}= require '../lib/index'
 log= require '../lib/log'
+notify= require '../lib/notify'
 
 cli
   .version(pkg.version)
@@ -26,6 +27,7 @@ if cli.target?
     log.info " only #{ cli.target }:"
     bot= assembot cli.target, options
     bot.build().then ->
+      notify.emit 'done'
       log.info "Done"
   else
     log.say "Target '#{ cli.target }' not found."
@@ -35,6 +37,7 @@ else
 
   buildIt= ->
     if targets.length is 0
+      notify.emit 'done'
       log.info "Done"
     else
       {target, options}= targets.shift()
