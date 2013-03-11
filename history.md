@@ -1,3 +1,5 @@
+# Version 0.2.2
+- Reorganized source structure
 
 # Version 0.2.1
 - Bugfixes

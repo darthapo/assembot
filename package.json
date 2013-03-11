@@ -1,6 +1,6 @@
 {
   "name": "assembot",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "description": "Simple asset assembly bot for compiling/combining client-side js and css files.",
   "author": "Matt McCray <matt@elucidata.net>",
@@ -14,6 +14,16 @@
     "assembot-new": "./bin/assembot-new",
     "assembot-serve": "./bin/assembot-serve"
   },
+   "keywords": [
+    "cli",
+    "http",
+    "server",
+    "assembler",
+    "compiler",
+    "transpiler",
+    "commonjs",
+    "build"
+  ],
   "scripts": {
     "test": "mocha"
   },

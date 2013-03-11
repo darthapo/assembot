@@ -35,6 +35,6 @@ In the [configuration file](https://github.com/darthapo/assembot/blob/master/doc
 
 In your plugin, you can add [processors](https://github.com/darthapo/assembot/blob/master/docs/custom-processors.md) or extend the dev server. Most of the time you'll interact/extend AssemBot by subscribing to [lifecyle events](https://github.com/darthapo/assembot/blob/master/docs/lifecycle-events.md)
 
-Some of the [core compontents](https://github.com/darthapo/assembot/tree/master/src/assembot/plugins) of of AssemBot are built via plugins, they're a good place to start learning what's possible.
+Some of the [core compontents](https://github.com/darthapo/assembot/tree/master/src/plugins) of of AssemBot are built via plugins, they're a good place to start learning what's possible.
 
-> [$/assembot/tree/master/src/assembot/plugins](https://github.com/darthapo/assembot/tree/master/src/assembot/plugins)
+> [$/assembot/tree/master/src/plugins](https://github.com/darthapo/assembot/tree/master/src/plugins)

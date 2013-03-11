@@ -1,9 +1,9 @@
 
 build:
-	@./node_modules/.bin/coffee -o lib/assembot -c src/assembot
+	@./node_modules/.bin/coffee -o lib -c src
 
 watch:
-	@./node_modules/.bin/coffee -w -o lib/assembot -c src/assembot
+	@./node_modules/.bin/coffee -w -o lib -c src
 
 push:
 	git push dropbox
