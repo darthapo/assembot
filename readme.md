@@ -4,22 +4,22 @@
 
 AssemBot is a simple asset assembler for use in developing JS web apps. It's designed for my own preferred way of development, so YMMV.
 
-It's rather like stitch, but not exactly. It compiles an entire directory into a single, commonjs moduled, javascript file. It will also create a single .css file from all the styles in a single directory, recursively. It will transpile where appropriate (CoffeeScript, eco, less, stylus).
+It's rather like stitch, but not exactly. It can compile an entire directory into a single, commonjs moduled, javascript file. It can also create a single .css file from all the styles in a single directory, recursively. It will also transpile where appropriate (CoffeeScript, eco, less, stylus, etc).
 
-If you don't like the default conventions, you can configure it in your `package.json` file.
+If you don't like the default conventions, you can configure it in your `package.json` file. You can also extend AssemBot with plugins to add processor, or packages types. See the [docs](https://github.com/darthapo/assembot/tree/master/docs) for more.
 
 ## Installation
 
     npm install -g assembot
 
-You don't **have** to install it globally, but it comes with a pre-configured binfile to make it quick to use on a project. (It defaults to compiling `./source` into `public/app.js` and `public/theme.css`)
+You don't **have** to install it globally, but it comes with a pre-configured binfile to make it quick to use on projects. (It defaults to compiling `./source` into `public/app.js` and `public/app.css`)
 
 ## Usage
 
 At it's simplest:
 
     cd my_project
-    assembot --build
+    assembot build
 
 If you want to configure it via package.json, just add an `assembot` section to your package and run `assembot`.
 
@@ -27,9 +27,11 @@ If you want to configure it via package.json, just add an `assembot` section to 
 {
   ... Other node/npm stuff ...
   "assembot": {
-    "output/my_file.js": {
-      "source": "./src"
-      "minify": 1
+    "targets": {
+      "output/my_file.js": {
+        "source": "./source"
+        "minify": 1
+      }
     }
   }
 }
@@ -40,20 +42,26 @@ If you've not installed it globally, then you'll need to add it as a dependency 
     npm install assembot --save
     ./node_modules/.bin/assembot --build
 
+AssemBot can give you a head start by creating a assembot configuration block for you:
+
+    assembot init
+
 
 ## Transpiler Support
 
 AssemBot initially enables support for transpiling `.coffee`, `.litcoffee`, `.eco`, `.dot`, `.ejs`, `.less`, and `.styl` files. When using stylus, it will attempt to enable Nib by default as well.
 
+There's a start on some others as well. Plus, you can always [add your own](https://github.com/darthapo/assembot/blob/master/docs/custom-processors.md).
+
 ## Token Replacement
 
-In your sources files you can embed data defined in your `package.json` file by using a special token syntax: `{%- package.author -%}`
+In your sources files you can reference data defined in your `package.json` file by using a special token syntax: `{%- package.author -%}`
 
 AssemBot will attempt to replace all tokens in your sources files. To disable this behavior, set `replaceTokens` to `false`.
 
 ## Embedded CSS
 
-Supports compiling CSS into the JS package. Use `.ecss` (or `.estyl` or `.eless`) file extension. Generates a module you can use like this:
+It also supports compiling CSS into the JS package. Use `.ecss` (or `.estyl` or `.eless`) file extension. Generates a module you can use like this:
 
 ```coffeescript
 require('my/view/styles').activate()
@@ -67,52 +75,47 @@ require('my/view/styles').activate()
 
 AssemBot comes with a dev server, to use it:
 
-    assembot --serve
-
-
-## Command Line Help
-
-You can get a list of the supported command line options too:
-
-    assembot -h
+    assembot serve
 
 ## Default Configuration
 
-The default AssemBot configuration from ./src/defaults.coffee:
+Following are the default AssemBot configuration values, when creating your own configuration, you don't need to specify all on these -- only those you wish to override:
 
-
-```coffeescript
-exports.config=
-  source: './source'
-  ident: 'require'
-  autoStart: no
-  minify: 0 # 0=none, 1=minify, 2=mangle
-  sourceMap: no # still a work in progress
-  header: "/* Assembled by AssemBot {%- assembot.version -%} */"
-  replaceTokens: yes
-  coffee:
-    bare: yes
-    literate: no
-
-
-exports.options=
-  port: 8080
-  wwwRoot: './public'
-
-
-exports.assembot=
-  "public/app.js": exports.config
-  "public/theme.css": exports.config
-
+```json
+{
+  "assembot": {
+    "options": {
+      "header": "/* Assembled by AssemBot {%- assembot.version -%} */",
+      "addHeader": true,
+      "minify": 0,
+      "ident": "require",
+      "autoLoad": null,
+      "replaceTokens": true,
+      "plugins": [],
+      "coffee": {
+        "bare": true
+      },
+      "http": {
+        "port": 8080,
+        "paths": {
+          "/": "./public",
+          "/components": "./components"
+        }
+      }
+    },
+    "targets": {
+      "public/app.js": {
+        "source": "./source"
+      },
+      "public/app.css": {
+        "source": "./source"
+      }
+    }
+  }
+}
 ```
 
 
 ## Roadmap
 
-- v0.1 = Make it work.
-- v0.2+ = Make it better.
-
-## Todo
-
-- Have it look in other places than just package.json, say: component.json, build.json, assembot.json, etc.
-- Test support for handlebars and other template engines that require a runtime (ugh).
+- v0.3+ = Make it better. Look into SourceMap support.

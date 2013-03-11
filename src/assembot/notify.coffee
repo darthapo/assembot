@@ -13,22 +13,33 @@ class Notify
   beforeBuild: (bot)-> @vent.emit 'before:build', bot
 
   beforeScan: (bot)-> @vent.emit 'before:scan', bot
-  afterScan: (bot)-> @vent.emit 'after:scan', bot
+  afterScan: (bot)-> 
+    @vent.emit 'after:scan', bot
+    @vent.emit 'scan', bot
 
   beforeRender: (bot)-> @vent.emit 'before:render', bot
 
   beforeRenderItem: (resource)-> @vent.emit 'before:renderItem', resource
-  afterRenderItem: (resource)-> @vent.emit 'after:renderItem', resource
+  afterRenderItem: (resource)-> 
+    @vent.emit 'after:renderItem', resource
+    @vent.emit 'renderItem', resource
 
-  afterRender: (bot)-> @vent.emit 'after:render', bot
+  afterRender: (bot)-> 
+    @vent.emit 'after:render', bot
+    @vent.emit 'render', bot
 
   beforeAssemble: (bot)-> @vent.emit 'before:assemble', bot
-  afterAssemble: (bot)-> @vent.emit 'after:assemble', bot
+  afterAssemble: (bot)-> 
+    @vent.emit 'after:assemble', bot
+    @vent.emit 'assemble', bot
 
-  afterBuild: (bot)-> @vent.emit 'after:build', bot
+  afterBuild: (bot)-> 
+    @vent.emit 'after:build', bot
+    @vent.emit 'build', bot
 
   beforeWrite: (bot)-> @vent.emit 'before:write', bot
-  afterWrite: (bot)-> @vent.emit 'after:write', bot
+  afterWrite: (bot)-> 
+    @vent.emit 'write', bot
 
   createServer: (server, opts)-> @vent.emit 'create:server', server, opts
   startServer: (server, opts)-> @vent.emit 'start:server', server, opts

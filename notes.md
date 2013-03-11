@@ -1,7 +1,8 @@
 # AssemBot Notes/Todos
 
 - Add support for excluding files from build (relative to source root).
-- Add mocha setup and test to new project template.
+
+- Add support for auto-incrementing package, or component, json build numbers.
 
 Example:
 
@@ -23,7 +24,7 @@ Example:
 
 ## Ideas
 
-- Add a setting for auto activating any embedded css. Should it just do everything, or selectively?
+- Add a setting for auto-activating any embedded css. Should it just do everything, or selectively?
 
 - Move from processors overwriting `resource.content` to having a 
   second property: `resource.rendered`. Default processors would 
@@ -62,35 +63,6 @@ Example:
 			}
 		}
 		
-- Add hooks for plugins and processors to add to the resource list.
-
-	For example, if a template engine had a runtime, it could automatically add it
-	to the resource list for compilation to it's available without the need for an
-	external script tag.
-
-	Maybe add method to the `Processor` class like: `.runtime(modulePath, contentsOrPath)`?
-
-		addProcessor('js').ext('.settee')
-			.requires('settee-templates')
-			.runtime('engines/settee', CONTENT_OR_FILEPATH)
-			.build -> 
-				# the rest...
-	
-	Or, use lifecycle events:
-
-		settee_was_used= no
-
-		addProcessor('js').ext('.settee')
-			.requires('settee-templates')
-			.build -> 
-				settee_was_used= yes
-				# the rest...
-	
-		AssemBot.on 'after:render', (bot)->
-			if settee_was_used
-				bot.resources.push new Resource 'runtime/settee.js', cat('settee.runtime.js')
-
-
 
 ## Exploratory
 
@@ -108,11 +80,14 @@ module.exports= (assembot, done)-> # (Not sure if done is really needed yet)
 			done(null, content, opts) # just pass on through, no rendering required
 
 
-	assembot.addPackager('php') # new code needed for this...
-		.build (resources, options)->
-			result= ""
-			result += res.content for res in resources
-			result
+	# This should work right now, actually
+	addPackager 'php', (resources, options, done)->
+	  results= ""
+	  for res in resources
+	    results += "/* #{ res.path } */\n"
+	    results += res.content
+	    results += "\n\n"
+	  done null, results
 
 ```
 
@@ -128,14 +103,6 @@ Your build.json:
 			}
 		}
 
-### Minifier
-
-Make the minifier use the plugin system?
-
-```coffeescript
-assembot.on 'before:write', (bot)->
-	bot.content= results
-```
 
 - What if the plugin uses async code?
 

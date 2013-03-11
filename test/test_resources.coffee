@@ -88,3 +88,17 @@ describe 'resourcelist helper method', ->
 
   it 'should exist', ->
     should.exist resourcelist
+
+  it 'should return a populated ResourceList from path', ->
+    reslist= resourcelist './test/fixtures'
+    jslist= reslist.forTarget('js')
+    should.exist jslist
+    jslist.should.have.length 2
+
+    csslist= reslist.forTarget('css')
+    should.exist csslist
+    csslist.should.have.length 2
+
+    xlist= reslist.forTarget('unknown')
+    should.exist xlist
+    xlist.should.have.length 0
