@@ -1,49 +1,60 @@
 # AssemBot Notes/Todos
 
+- Add support for 'pruning' the output. Only include the resources that are
+  explicitly `require`d by the code (post-render phase, loop through all 
+  the js resources and scan for require(...) calls.) Add a "main" section 
+  to the config, and a "prune" option. "autoload" becomes a boolean.
+
+  	"options": {
+			"main": "my/modules/main",
+			"autoload": true,
+			"prune": true
+  	}
+
 - Add support for excluding files from build (relative to source root).
 
-- Add support for auto-incrementing package, or component, json build numbers.
+- Add support for auto-incrementing package build numbers.
 
-Example:
-
-```json
-{
-	"assembot": {
-		"options": {
-			"plugins": ["./my-local-plugin", "plugin-from-npm"]
-		},
-		"targets": {
-			"public/app.js": {
-				"source": "./source",
-				"exclude": "test/*"
+- Add dev server proxy plugin. It would let you mount proxies to a uri. Just
+  look at the paths and if any are a full URL then turn it into a proxy?
+	
+		"http": {
+			"paths": {
+				"/google": "http://www.google.com"
 			}
 		}
-	}
-}
-```
+
 
 ## Ideas
 
-- Add a setting for auto-activating any embedded css. Should it just do everything, or selectively?
+- Move to 'debug' for logging? Have two branches? assembot:info:component
+  and assembot:debug:componet
+	
+	Then running assembot debug would set the env 'DEBUG=assembot:*'
+
+	Using -v flag would set the env 'DEBUG=assembot:info:*'
+
+- Add a setting for auto-activating any embedded css. Should it just do
+  everything, or selectively?
 
 - Move from processors overwriting `resource.content` to having a 
   second property: `resource.rendered`. Default processors would 
   just take the content and assign it to rendered.
   
-- Add support for including `./components` --  component.io style. More condusive
-	to AssemBot's build system style (already supports/expects common-js
-	modules).
+- Add support for including `./components` --  component.io style. More 
+  condusive to AssemBot's build system style (already supports/expects 
+  common-js modules).
 
 	Loads `component.json`, and includes the files referenced.
 
 	Converts `component-tip` to module path `component/tip`?
 
-	Or `elucidata-type` to `components/type` (all components under the `components/` 
-	path, remove vendor prefix)?
+	Or `elucidata-type` to `components/type` (all components under the 
+	`components/` path, remove vendor prefix)?
 
-	List which components to load in the config block, or just include all locally
-	installed components automatically? If latter, would need to include an 
-	exclusion filter.
+	List which components to load in the config block, or just include all 
+	locally installed components automatically? If latter, would need to 
+	include an exclusion filter.
 
 		{
 			"assembot": {

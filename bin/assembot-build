@@ -2,7 +2,7 @@
 
 cli= require 'commander'
 pkg= require '../package'
-{assembot, _, loadTargets}= require '../lib/index'
+{assembot, _, loadTargets, loadOptions}= require '../lib/index'
 log= require '../lib/log'
 notify= require '../lib/notify'
 
@@ -19,32 +19,33 @@ log.level 2 if cli.verbose
 log.info ''
 log.info "Building..."
 
-all_targets= loadTargets()
+options= loadOptions()
+all_targets= loadTargets(options)
 targets= []
 
 if cli.target?
-  if options= all_targets[cli.target]
+  if opts= all_targets[cli.target]
     log.info " only #{ cli.target }:"
-    bot= assembot cli.target, options
+    bot= assembot cli.target, opts
     bot.build().then ->
-      notify.emit 'done'
+      notify.emit 'done', options
       log.info "Done"
   else
     log.say "Target '#{ cli.target }' not found."
 
 else
-  targets.push {target, options} for target, options of all_targets
+  targets.push {target, opts} for target, opts of all_targets
 
   buildIt= ->
     if targets.length is 0
-      notify.emit 'done'
+      notify.emit 'done', options # TODO: FIX ME!
       log.info "Done"
     else
-      {target, options}= targets.shift()
+      {target, opts}= targets.shift()
       log.debug "Target:", target
       log.debug "Configuration:"
-      log.debug options
-      bot= assembot target, options
+      log.debug opts
+      bot= assembot target, opts
       bot.build().then buildIt
 
   buildIt()

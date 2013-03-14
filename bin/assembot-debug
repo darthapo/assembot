@@ -2,7 +2,7 @@
 
 cli= require 'commander'
 pkg= require '../package'
-{assembot, _, loadTargets}= require '../lib/index'
+{assembot, _, loadTargets, loadOptions}= require '../lib/index'
 log= require '../lib/log'
 
 cli
@@ -15,20 +15,22 @@ log.level 3
 log.info ''
 log.info "Building..."
 
+options= loadOptions()
+
 targets = []
 
-targets.push {target, options} for target, options of loadTargets()
+targets.push {target, opts} for target, opts of loadTargets(options)
 
 buildIt= ->
   if targets.length is 0
-    notify.emit 'done'
+    notify.emit 'done', options
     log.info "Done"
   else
-    {target, options}= targets.shift()
+    {target, opts}= targets.shift()
     log.debug "Target:", target
     log.debug "Configuration:"
-    log.debug options
-    bot= assembot target, options
+    log.debug opts
+    bot= assembot target, opts
     bot.build().then buildIt
 
 buildIt()

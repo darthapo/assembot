@@ -29,8 +29,8 @@ loadFirstLocalPackage= (names...)->
   loaded_from= 'defaults'
   defaults
 
-loadTargets= ->
-  nfo= loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
+loadTargets= (options)->
+  nfo= options ? loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
   options= nfo.options ? defaults.options
   src_targets= nfo.targets ? defaults.targets
   targets= {}
