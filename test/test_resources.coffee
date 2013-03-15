@@ -41,8 +41,6 @@ describe 'Resource class', ->
     res.should.have.property 'type', 'coffee'
 
 
-
-
 ###
 >>> ResourceList
 ###

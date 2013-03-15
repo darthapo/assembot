@@ -1,16 +1,5 @@
 # AssemBot Notes/Todos
 
-- Add support for 'pruning' the output. Only include the resources that are
-  explicitly `require`d by the code (post-render phase, loop through all 
-  the js resources and scan for require(...) calls.) Add a "main" section 
-  to the config, and a "prune" option. "autoload" becomes a boolean.
-
-  	"options": {
-			"main": "my/modules/main",
-			"autoload": true,
-			"prune": true
-  	}
-
 - Add support for excluding files from build (relative to source root).
 
 - Add support for auto-incrementing package build numbers.

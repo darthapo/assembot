@@ -40,8 +40,10 @@ Here's what AssemBot defaults to, if you don't override any of it:
       "header": "/* Assembled by AssemBot {%- assembot.version -%} */",
       "addHeader": true,
       "minify": 0,
+      "main": null,
+      "prune": false,
       "ident": "require",
-      "autoLoad": null,
+      "autoload": false,
       "replaceTokens": true,
       "plugins": [],
       "coffee": {
