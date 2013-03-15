@@ -17,7 +17,11 @@ module.exports= (assembot)->
             [src, lib]= modParser.exec(req)
             if lib[0..1] is './'
               rest= lib[2...]
-              lib= [path.dirname(res.path), rest].join('/')
+              moduledir= path.dirname(res.path)
+              lib= if moduledir is '.' or moduledir is ''
+                rest
+              else
+                [moduledir, rest].join('/')
             log.debug " -", lib
             res.dependencies.push lib
 
