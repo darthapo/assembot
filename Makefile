@@ -1,3 +1,10 @@
+
+build:
+	@./node_modules/.bin/coffee -o lib -c src
+
+watch:
+	@./node_modules/.bin/coffee -w -o lib -c src
+
 push:
 	git push dropbox
 	git push github
