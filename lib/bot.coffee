@@ -78,7 +78,7 @@ class Bot
       @returnContent(@content)
       @userCallbackForCompletion?()
     else
-      log.info "Writing", @output
+      log.info "Writing", path.relative(process.cwd(), @output)
       @content.to @output
       notify.afterWrite @
       @built= yes

@@ -54,6 +54,7 @@ assembot= (target, options={})->
     options
     './plugins/header'
     './plugins/minify'
+    './plugins/prune'
     './plugins/settee-templates'
   )
   new Bot target, options

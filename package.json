@@ -1,6 +1,6 @@
 {
   "name": "assembot",
-  "version": "0.2.2",
+  "version": "0.2.2pre",
   "license": "MIT",
   "description": "Simple asset assembly bot for compiling/combining client-side js and css files.",
   "author": "Matt McCray <matt@elucidata.net>",
@@ -35,7 +35,7 @@
     "url": "https://github.com/darthapo 1/assembot.git"
   },
   "dependencies": {
-    "coffee-script": "~1.5.0",
+    "coffee-script": "~1.6.1",
     "eco": "~1.1.0-rc-3",
     "stylus": "~0.32.0",
     "nib": "~0.9.1",
