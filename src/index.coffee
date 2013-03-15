@@ -11,7 +11,7 @@ project_root= process.cwd()
 {assembler}= require './assembler'
 {Bot}= require './bot'
 
-loaded_from= null
+loadedFrom= null
 
 loadFirstLocalPackage= (names...)->
   for name in names
@@ -19,14 +19,14 @@ loadFirstLocalPackage= (names...)->
       data= require "#{ project_root }#{ path.sep }#{ name }"
       if data.assembot?
         log.debug "Loaded #{ name }.json"
-        loaded_from= name
+        loadedFrom= name
         return data.assembot
       else
         throw new Error "No Assembot block"
     catch ex
       log.debug "No '#{ name }.json' file found!"
-  log.debug "No configuration found, using defaults!"
-  loaded_from= 'defaults'
+  log.info "No configuration found, using defaults!"
+  loadedFrom= 'defaults'
   defaults
 
 loadTargets= (options)->
@@ -45,7 +45,7 @@ loadOptions= (returnDefaults)->
     if nfo is defaults
       return null
     else
-      loaded_from
+      nfo.options
   else
     nfo.options ? defaults.options
   
@@ -67,6 +67,7 @@ module.exports= {
   loadTargets
   packager
   processor
+  loadedFrom
   loadOptions
   loadFirstLocalPackage
   _

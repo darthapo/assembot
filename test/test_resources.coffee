@@ -63,6 +63,13 @@ describe 'ResourceList class', ->
     should.exist reslist
     reslist.should.have.property 'length', 4
 
+  it 'should fetch Resource by path', ->
+    reslist= ResourceList.fromPath './test/fixtures'
+    should.exist reslist
+    res= reslist.get 'coffee'
+    should.exist res
+    res.path.should.equal 'coffee'
+
   it 'should allow filtering by type', ->
     reslist= ResourceList.fromPath './test/fixtures'
     jslist= reslist.forTarget('js')
@@ -77,8 +84,23 @@ describe 'ResourceList class', ->
     should.exist xlist
     xlist.should.have.length 0
 
+  it 'should support whitelisting paths', ->
+    reslist= ResourceList.fromPath './test/fixtures'
+    should.exist reslist
+    reslist.should.have.property 'length', 4
 
-    
+    reslist.whitelist ['coffee']
+    reslist.list.should.have.property 'length', 1
+    reslist.should.have.property 'length', 1
+
+  it 'should support blacklisting paths', ->
+    reslist= ResourceList.fromPath './test/fixtures'
+    should.exist reslist
+    reslist.should.have.property 'length', 4
+
+    reslist.blacklist ['coffee']
+    reslist.list.should.have.property 'length', 3
+    reslist.should.have.property 'length', 3
 
 
 ###

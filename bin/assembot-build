@@ -20,7 +20,7 @@ log.info ''
 log.info "Building..."
 
 options= loadOptions()
-all_targets= loadTargets(options)
+all_targets= loadTargets()
 targets= []
 
 if cli.target?

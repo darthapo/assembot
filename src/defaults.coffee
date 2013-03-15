@@ -7,7 +7,9 @@ module.exports=
     # sourceMap: no # NOT SUPPORT YET
     minify: 0 # 0=none, 1=minify, 2=mangle
     ident: 'require'
-    autoLoad: null
+    autoload: no
+    main: null
+    prune: no
     replaceTokens: yes
     
     plugins: []

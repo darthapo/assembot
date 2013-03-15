@@ -52,6 +52,29 @@ class ResourceList
     @length += 1
     @
 
+  push: @::add
+
+  get: (targetPath)->
+    for res in @list
+      return res if res.path is targetPath
+    null
+
+  blacklist: (pathlist)->
+    list= @list.slice()
+    @list= []
+    for res in list
+      @list.push res unless res.path in pathlist
+    @length= @list.length
+    @
+
+  whitelist: (pathlist)->
+    list= @list.slice()
+    @list= []
+    for res in list
+      @list.push res if res.path in pathlist
+    @length= @list.length
+    @
+
   treeForTarget: (target)->
     tree={}
     for resource in @forTarget(target)

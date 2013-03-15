@@ -41,11 +41,11 @@ class Bot
     notify.beforeBuild @
 
     notify.beforeScan @
-    @resources= resourcelist(@source).forTarget @target
+    @resources= resourcelist(@source)
     notify.afterScan @
 
     notify.beforeRender @
-    processor.render @resources, @options, @didRender
+    processor.render @resources.forTarget(@target), @options, @didRender
     @
 
   # Send a callback to be notified when the build has run to completion.
@@ -61,7 +61,7 @@ class Bot
     notify.afterRender @
 
     notify.beforeAssemble @
-    assembler @target, @resources, @options, @didAssemble
+    assembler @target, @resources.forTarget(@target), @options, @didAssemble
 
   didAssemble: (err, @content)=>
     throw err if err?

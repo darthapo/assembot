@@ -40,7 +40,7 @@ plugin= (assembot)->
   assembot.after 'render', (bot)->
     if settee_was_used
       if test('-f', runtime_path)
-        bot.resources.push new Resource 'runtime/settee.js', cat(runtime_path)
+        bot.resources.add new Resource 'runtime/settee.js', cat(runtime_path)
       else
         throw new Error "Cannot embed Settee runtime! Not found at #{ runtime_path }"
 

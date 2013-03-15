@@ -40,6 +40,11 @@ type= do ->
     else
       "object"
 
+
+without= (source, target)->
+  item for item in source when item not in target
+
+
 validateOptionsCallback= (options, callback)->
   if typeof options is 'function'
     [{}, options]
@@ -127,9 +132,10 @@ localRequire= (name, callback)->
 
 module.exports= {
   pp
-  extend
-  defaults
   type
+  extend
+  without
+  defaults
   validateOptionsCallback
   tryRequire
   tryRequireAll
