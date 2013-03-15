@@ -33,7 +33,7 @@ class ResourceList
 
   constructor: ()->
     @list= []
-    @paths= []
+    @pathsByTarget={}
     @length= 0
 
   each: (callback)->
@@ -49,11 +49,12 @@ class ResourceList
     @
 
   add: (resource, safely)->
-    if resource.path in @paths
+    paths= (@pathsByTarget[resource.target] ||= [])
+    if resource.path in paths
       throw new Error "Duplicate resource path!" unless safely
     else
       @list.push resource
-      @paths.push resource.path
+      paths.push resource.path
       @length += 1
     @
 

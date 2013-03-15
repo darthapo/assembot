@@ -4,7 +4,7 @@
 
 AssemBot is a simple asset assembler for use in developing JS web apps. It's designed for my own preferred way of development, so YMMV.
 
-It's rather like stitch, but not exactly. It can compile an entire directory into a single, commonjs moduled, javascript file. It can also create a single .css file from all the styles in a single directory, recursively. It will also transpile where appropriate (CoffeeScript, eco, less, stylus, etc).
+It's rather like stitch, but not exactly. It can compile an entire directory into a single, commonjs moduled, javascript file. It can also create a single .css file from all the styles in a single directory, recursively. It will also transpile where appropriate (CoffeeScript, eco, less, stylus, etc). You can enable pruning to excise modules you don't `require` in your code.
 
 If you don't like the default conventions, you can configure it in your `package.json` file. You can also extend AssemBot with plugins to add processor, or packages types. See the [docs](https://github.com/darthapo/assembot/tree/master/docs) for more.
 

@@ -68,6 +68,28 @@ describe 'ResourceList class', ->
     should.exist res
     res.path.should.equal 'coffee'
 
+  it 'should not allow duplicate resource paths', ->
+    res1= new Resource 'main.js', "MAIN.js"
+    res2= new Resource 'main.coffee', "MAIN.coffee"
+    reslist= new ResourceList
+    reslist.add res1
+    reslist.should.have.property 'length', 1
+    fn= ->
+      reslist.add res2
+    expect(fn).to.throw Error
+    reslist.should.have.property 'length', 1
+
+  it 'should allow duplicate resource paths for difference targets', ->
+    res1= new Resource 'main.js', "MAIN.js"
+    res2= new Resource 'main.css', "MAIN.css"
+    reslist= new ResourceList
+    reslist.add res1
+    reslist.should.have.property 'length', 1
+    fn= ->
+      reslist.add res2
+    expect(fn).to.not.throw Error
+    reslist.should.have.property 'length', 2
+
   it 'should allow filtering by type', ->
     reslist= ResourceList.fromPath './test/fixtures'
     jslist= reslist.forTarget('js')

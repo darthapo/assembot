@@ -28,6 +28,8 @@
 - Add a setting for auto-activating any embedded css. Should it just do
   everything, or selectively?
 
+- Add a "prune.keep" key to keep certain, unrequired by "main," modules.
+
 - What about an easy way to create multiple targets from the same compiled
   source? (for example; one minified, one not) Maybe a "minifyTo" key?
 

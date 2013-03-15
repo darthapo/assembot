@@ -31,6 +31,9 @@ module.exports= (assembot)->
     add_libs= (name)->
       unless name in libs
         res= bot.resources.get(name)
+        unless res?
+          name= "#{ name }/index"
+          res= bot.resources.get(name) 
         if res?
           libs.push name
           for dep in res.dependencies
