@@ -1,5 +1,7 @@
 # AssemBot Notes/Todos
 
+- Support SourceMaps!
+
 - Add support for excluding files from build (relative to source root).
 
 - Add support for auto-incrementing package build numbers.
@@ -25,6 +27,43 @@
 
 - Add a setting for auto-activating any embedded css. Should it just do
   everything, or selectively?
+
+- What about an easy way to create multiple targets from the same compiled
+  source? (for example; one minified, one not) Maybe a "minifyTo" key?
+
+  	"public/app.js": {
+			"source": "./source",
+			"minify: 1,
+			"minifyTo": "public/app.min.js"
+  	}
+
+- Multiple source directories?
+
+		"public/app.js": {
+			"source": ["./source", "./components"]
+		}
+
+	What if we want to prepend a path? Maybe:
+
+		"public/app.js": {
+			"source": "./source",
+			"mount": {
+				"components": "./components",
+				"vendor": "./lib"
+			}
+	  }
+
+	Or?
+
+		"public/app.js": {
+			"source": [
+				"./source", 
+				{ 
+					"vendor": "./lib", 
+					"elucidata": "~/Projects/OpenSource/elucidata-components" 
+				}
+			]
+		}
 
 - Move from processors overwriting `resource.content` to having a 
   second property: `resource.rendered`. Default processors would 

@@ -1,3 +1,5 @@
+# Version 0.2.3
+
 # Version 0.2.2
 - Reorganized source structure
 - Added support for pruning modulelist based on `require`s

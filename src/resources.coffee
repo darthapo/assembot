@@ -33,6 +33,7 @@ class ResourceList
 
   constructor: ()->
     @list= []
+    @paths= []
     @length= 0
 
   each: (callback)->
@@ -47,9 +48,13 @@ class ResourceList
     callback resources, i for resource, i in @forTarget(target)
     @
 
-  add: (resource)->
-    @list.push resource
-    @length += 1
+  add: (resource, safely)->
+    if resource.path in @paths
+      throw new Error "Duplicate resource path!" unless safely
+    else
+      @list.push resource
+      @paths.push resource.path
+      @length += 1
     @
 
   push: @::add

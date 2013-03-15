@@ -89,7 +89,9 @@ Following are the default AssemBot configuration values, when creating your own 
       "addHeader": true,
       "minify": 0,
       "ident": "require",
-      "autoLoad": null,
+      "autoload": false,
+      "main": null,
+      "prune": false,
       "replaceTokens": true,
       "plugins": [],
       "coffee": {
