@@ -28,15 +28,21 @@ validTarget= (filepath)->
 
 render= (resources, options, done)->
   if resources.length is 0
-    log.debug "Rendering 0 resources"
+    log.info "Rendering 0 resources"
     return done()
   else
-    log.debug "Rendering #{ resources[0].target } resources:"
+    log.info "Rendering #{ resources[0].target } resources:"
+  ll= log.level()
+  p= -> 
+    return if ll < 1
+    _.print "."
   t= (r,cb)-> 
     notify.beforeRenderItem r
+    p()
     r.content= replaceTokens(r.content, options) if options.replaceTokens
     transpile r, options, cb
   async.each resources, t, (err, rest)->
+    _.print "\n" unless ll < 1
     throw err if err?
     done(err)
   true
@@ -300,10 +306,13 @@ compile_less= (less, source, callback)->
 
 compile_stylus= (stylus, nib, source, opts, callback)->
   options= _.defaults {}, (opts.stylus || {}),
-    filename: opts.current_file.filename || 'generated.css'
+    filename: opts.current_file.filepath || 'generated.css'
     paths: opts.load_paths
+  if opts.current_file.extra?.sourcePath?
+    options.paths.push opts.current_file.extra.sourcePath
+  # console.log "opts.current_file", opts.current_file
   stylus(source)
-    .set('filename', opts.current_file.filename || 'generated.css')
+    .set('filename', opts.current_file.filepath || 'generated.css')
     .set('paths', opts.load_paths)
     .set(options)
     .use(nib())
@@ -356,6 +365,7 @@ addProcessor('js').ext('.estyl')
     load_paths= [process.cwd(), path.dirname(__dirname)]
     (source, opts, converted)->
       opts.load_paths= load_paths
+      (opts.stylus ?= {}).compress= yes
       compile_stylus stylus, nib, source, opts, (err, css)->
         if err?
           converted err, null, opts

@@ -35,6 +35,7 @@ build_middleware= (bots, config)->
           else 'text/html'
         res.set 'Content-Type', contentType
         res.send 200, content
+        bot.flush()
     else
       # log.info "Not a package target:", url, bot
       next()
@@ -52,7 +53,7 @@ exports.start= (bots, options)->
   notify.createServer app, options
 
   app.use express.errorHandler( dumpExceptions:yes, showStack:yes )
-  app.use express.logger()
+  app.use express.logger() if conf.log
   app.use build_middleware(bots, conf)
 
   log.info "Mounting paths:"

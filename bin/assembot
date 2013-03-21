@@ -1,23 +1,23 @@
-#!/usr/bin/env coffee
+#!/usr/bin/env node
 
-src= "BEEP BOOP BLARP CLANG OORT".split ' '
-sfx= src[Math.floor(Math.random() * src.length)]
-pkg= require '../package'
-cli= require 'commander'
- 
-cli
-  .version(pkg.version)
-  .command('build', 'Builds target package(s)')
-  .command('serve', 'Starts dev server')
-  .command('new [project]', 'Create a new project')
-  .command('init', 'Creates a configuration file, if missing')
-  # .command('info', 'Show information about build')
-  # .command('debug', 'Show debug information')
-  .parse(process.argv)
+var src= "BEEP BOOP BLARP CLANG OORT".split(' '),
+    sfx= src[Math.floor(Math.random() * src.length)],
+    pkg= require('../package'),
+    log= require('../lib/log'),
+    cli= require('commander');
 
-log= require '../lib/log'
+console.log("\n  AssemBot! *"+ sfx +"*\n")
 
-log.level 2 if cli.verbose
-log.level 0 if cli.quiet
+cli.version(pkg.version)
 
-log.info "\n  AssemBot! *#{ sfx }*"
+require('../lib/cli/build')(cli, pkg)
+require('../lib/cli/init')(cli, pkg)
+require('../lib/cli/new')(cli, pkg)
+require('../lib/cli/serve')(cli, pkg)
+
+cli.parse(process.argv)
+
+if(cli.verbose) log.level( 2 )
+if(cli.quiet) log.level( 0 )
+
+

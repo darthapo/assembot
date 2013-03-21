@@ -117,6 +117,9 @@ Following are the default AssemBot configuration values, when creating your own 
 }
 ```
 
+## Tips
+
+One thing I like to do is instead of adding configuration info in cumbersome JSON, I put it in a coffeescript file (usually `assembot.coffee`).
 
 ## Roadmap
 

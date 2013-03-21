@@ -1,32 +1,11 @@
-#!/usr/bin/env coffee
-_= require '../lib/util'
-cli= require 'commander'
-pkg= require '../package'
-log= require '../lib/log'
-defaults= require '../lib/defaults'
+require 'coffee-script'
+_= require '../util'
+log= require '../log'
+defaults= require '../defaults'
 path= require 'path'
 {spawn}= require('child_process')
 {test, cat, cd, mkdir, exec}= require 'shelljs'
-{loadOptions}= require '../lib/index'
-
-cli
-  .version(pkg.version)
-  .option('-v, --verbose', 'force installation')
-  .option('-q, --quiet', 'force installation')
-
-cli
-  .command('*')
-  .description("project directory name")
-  .action((name)->
-    build_project name     
-  )
-
-log.say ''
-
-if process.argv.length is 2
-  log.say "I am an advanced Bot, yes. But my telepathic circuits aren't ready yet.\n"
-  log.say "Please enter a project name!"
-
+{loadOptions}= require '../index'
 
 build_project= (name)->
   projectpath= path.resolve "./#{ name }"
@@ -188,8 +167,22 @@ content=
   # The hard way, cause Makefile's have to have tabs, not spaces!
   makefile: "build:\n\t./node_modules/.bin/assembot build\n\ntest:\n\t@NODE_ENV=test\n\t@clear\n\t@./node_modules/.bin/mocha\n\n.PHONY: build test\n"
 
-cli
-  .parse(process.argv);
+# cli
+#   .parse(process.argv);
 
-log.level 0 if cli.quiet
-log.level 2 if cli.verbose
+# log.level 0 if cli.quiet
+# log.level 2 if cli.verbose
+
+
+module.exports= (cli, pkg)->
+  cli
+    .command('new')
+    .description("project directory name")
+    .action((name)->
+      if process.argv.length < 4
+        log.say "I am an advanced Bot, yes. But my telepathic circuits aren't ready yet.\n"
+        log.say "Please enter a project name!"
+        return
+      build_project name     
+    )
+

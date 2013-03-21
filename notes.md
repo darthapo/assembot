@@ -18,6 +18,8 @@
 
 ## Ideas
 
+- Add option to disable commonjs asssembly.
+
 - Move to 'debug' for logging? Have two branches? assembot:info:component
   and assembot:debug:componet
 	

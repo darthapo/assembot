@@ -36,6 +36,7 @@ initialized= no
 
 init= (options, preload...)->
   return false if initialized
+  options.callback.call(context, context) if options.callback?
   # Assemble a list of all the plugins to load and load 'em
   if options.plugins? and type(options.plugins) is 'array'
     preload= preload.concat options.plugins

@@ -19,6 +19,7 @@ module.exports=
 
     http:
       port: 8080
+      log: yes
       paths:
         '/': './public'
         '/components': './components'

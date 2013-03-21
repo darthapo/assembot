@@ -8,7 +8,7 @@ log= require('./log')
 
 class Resource
   # File path should be relative to the source root, not including the source dirname
-  constructor: (@filepath, @content)->
+  constructor: (@filepath, @content, @extra={})->
     log.debug " -", @filepath
     # @disable= no
     @ext= path.extname(@filepath)
@@ -27,7 +27,7 @@ class ResourceList
       filepath= path.join sourcePath, filename
       continue unless test('-f', filepath)
       contents= cat(filepath)
-      res= new Resource filename, contents
+      res= new Resource filename, contents, sourcePath:sourcePath
       reslist.add res
     reslist
 

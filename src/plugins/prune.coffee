@@ -1,5 +1,16 @@
 path= require 'path'
 
+resolve_path= (libpath, from)->
+  if libpath[0] is '.'
+    moduledir= path.dirname(from)
+    if moduledir is '.' or moduledir is ''
+      moduledir= ""
+    else
+      moduledir= "/#{ moduledir }"
+    path.resolve("#{moduledir}/#{libpath}")[1..]
+  else
+    libpath
+
 module.exports= (assembot)->
   {log}= assembot
 
@@ -15,13 +26,7 @@ module.exports= (assembot)->
         for req in reqs
           if modParser.test(req)
             [src, lib]= modParser.exec(req)
-            if lib[0..1] is './'
-              rest= lib[2...]
-              moduledir= path.dirname(res.path)
-              lib= if moduledir is '.' or moduledir is ''
-                rest
-              else
-                [moduledir, rest].join('/')
+            lib= resolve_path lib, res.path
             log.debug " -", lib
             res.dependencies.push lib
 
@@ -46,6 +51,7 @@ module.exports= (assembot)->
           missing.push name
 
     add_libs bot.options.main
+    libs.sort()
     log.info " -", lib for lib in libs
 
     if missing.length

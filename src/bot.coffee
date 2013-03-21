@@ -74,7 +74,7 @@ class Bot
     notify.beforeWrite @
 
     if @returnContent?
-      log.info "Returning content to callback", @output
+      log.info "Returning content to callback", path.relative(process.cwd(), @output)
       @returnContent(@content)
       @userCallbackForCompletion?()
     else
@@ -85,6 +85,11 @@ class Bot
       @userCallbackForCompletion?()
 
   rebuild: @::build
+
+  flush: ->
+    delete @resources
+    delete @content
+    @built= no
 
 bot= (output, options)->
   new Bot output, options

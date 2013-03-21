@@ -1,4 +1,4 @@
-
+require 'coffee-script'
 log= require('./log')
 defaults= require './defaults'
 _= require './util'
@@ -18,14 +18,12 @@ loadFirstLocalPackage= (names...)->
     try
       data= require "#{ project_root }#{ path.sep }#{ name }"
       if data.assembot?
-        log.debug "Loaded #{ name }.json"
         loadedFrom= name
         return data.assembot
       else
         throw new Error "No Assembot block"
     catch ex
       log.debug "No '#{ name }.json' file found!"
-  log.info "No configuration found, using defaults!"
   loadedFrom= 'defaults'
   defaults
 
@@ -45,7 +43,7 @@ loadOptions= (returnDefaults)->
     if nfo is defaults
       return null
     else
-      nfo.options
+      loadedFrom
   else
     nfo.options ? defaults.options
   
