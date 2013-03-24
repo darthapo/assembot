@@ -1,7 +1,8 @@
 # Version 0.2.5
-- New server-latency plugin, to simulate server latency in dev server.
+- New server-latency plugin, to simulate server latency in dev server
 - Updated prune plugin to build dependency list (parses coffeescript now)
-  and whitelists pre-render. So files that are referenced won't be transpiled.
+  and whitelists pre-render. So files that are referenced won't be transpiled
+- Moved project creation to fgen
 
 
 # Version 0.2.4

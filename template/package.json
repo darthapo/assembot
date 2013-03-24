@@ -1,0 +1,13 @@
+{
+  "name": "{{ name }}",
+  "version": "1.0.0",
+  "license": "",
+  "description": "",
+  "author": "",
+  "devDependencies": {
+    "assembot": "~0.2.5",
+    "coffee-script": "~1.6.1",
+    "mocha": "*",
+    "chai": "*"
+  }
+}
