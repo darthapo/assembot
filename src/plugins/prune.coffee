@@ -14,13 +14,13 @@ resolve_path= (libpath, from)->
 module.exports= (assembot)->
   {log}= assembot
 
-  assembot.after 'render', (bot)->
+  assembot.after 'scan', (bot)->
     return if bot.target isnt 'js'
     return unless bot.options.main? and bot.options.prune
-    log.info "Scanning resources for internal dependencies..."
+    log.info "Building dependency list..."
     bot.resources.each (res)->
       res.dependencies= []
-      if reqs= res.content.match(reqParser)
+      if reqs= res.content.match(requireParser)
         log.debug res.path
         libs=[]
         for req in reqs
@@ -30,7 +30,7 @@ module.exports= (assembot)->
             log.debug " -", lib
             res.dependencies.push lib
 
-  assembot.before 'assemble', (bot)->
+  assembot.before 'render', (bot)->
     return if bot.target isnt 'js'
     return unless bot.options.main? and bot.options.prune
     log.info "Building whitelist of modules to include..."
