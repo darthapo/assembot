@@ -1,3 +1,7 @@
+# Version 0.2.5
+- New server-latency plugin, to simulate server latency in dev server.
+
+
 # Version 0.2.4
 - Added target source path to stylus load_paths
 - Tweaked CLI. It shouldn't choke on systems that don't have coffee-script 

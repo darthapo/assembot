@@ -128,6 +128,6 @@ addPackager 'js', (resources, options, callback)->
   result += """
     });\n
   """
-  result += "#{identifier}('#{autoStart}');\n" if autoStart
+  result += "this.#{identifier}('#{autoStart}');\n" if autoStart
 
   callback null, result

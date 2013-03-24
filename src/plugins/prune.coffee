@@ -62,3 +62,6 @@ module.exports= (assembot)->
 
 reqParser= /(require[\s]*?\([\s]*?['"]?[\.a-zA-Z0-9_\-/]*['"]?[\s]*?\))/g
 modParser= /['"]+([\.a-zA-Z0-9_\-/]*)['"]+/
+
+# Should match javascript and coffee sources
+requireParser= /(require[\s\(]+['"]?[\.a-zA-Z0-9_\-\/]*['"]?[\s\)]+)/g

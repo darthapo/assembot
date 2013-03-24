@@ -154,3 +154,44 @@ Your build.json:
 Move the default processors into plugins? 
 
 Especially the ones that require a runtime?!
+
+
+### Empirical vs Scanning
+
+Instead of scanning and loading every file in the source directory, why not take
+the prune plugin and build around it?
+
+You'd specify the source paths (an array), and a main entry point. It would then
+scan that file, search for `require`d files, then scan for those files -- repeating
+the dendency search for each child file until there are no more files required.
+
+Then you only have to load the content and transpile those files. Everything else
+in the source folder(s) would never be opened (or even touched at all).
+
+Would make supporting components even easier,
+
+```coffeescript
+assembot:
+	targets:
+		"public/app.js":
+			source: ['./source', './components']
+			main: "main"
+```
+
+```coffeescript
+assembot:
+	targets:
+		"public/app.js":
+			source: ['./source', './components']
+			main: ["main", "test"]
+```
+
+```coffeescript
+assembot:
+	targets:
+		"public/app.js":
+			paths: ['./source', './components']
+			source: ["main", "test", "never/required/directly/but/needed/*"]
+			autoload: "main" # or true to require first 'source'
+```
+
