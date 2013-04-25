@@ -1,6 +1,7 @@
 path= require 'path'
 
-plugin= (assembot)->
+plugin= (assembot, ident)->
+  ident "Settee Templates"
 
   {Resource, tryRequireResolve, log, shelljs}= assembot
   {cat,test}= shelljs

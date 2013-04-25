@@ -1,7 +1,8 @@
 
-module.exports= (assembot)->
+# TODO: Add support for adding a header from file...
+module.exports= (assembot, ident)->
+  # ident "Header"
 
-  # TODO: Add support for adding a header from file...
   {processor, log}= assembot
 
   assembot.before 'write', (bot)->

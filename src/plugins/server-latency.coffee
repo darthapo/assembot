@@ -12,10 +12,10 @@ Usage:
           ".(jpg|png|jpeg)": 100
 ###
 
-module.exports= (assembot)->
-  {log}= assembot
+module.exports= (assembot, ident)->
+  ident "Server Latency"
 
-  log.info "Server Latency Plugin..."
+  {log}= assembot
 
   assembot.on 'create:server', (server, opts={})->
     opts.http ?= {}

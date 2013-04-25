@@ -33,6 +33,8 @@ context= {
 context.on= Bot.on
 
 initialized= no
+_registry= {}
+lastLibName= null
 
 init= (options, preload...)->
   return false if initialized
@@ -45,13 +47,20 @@ init= (options, preload...)->
   initialized= yes
   false # or true if any loaded
 
+ident= (name)->
+  log.info " =D-- #{name}"
+  lastLibName= name
+
 load= (name)->
   # Load an individual plugin
   tryRequire name, (err, lib)->
     # Should they fail quitely?
     return log.error "Failure to load plugin #{ name }", err if err?
     
-    lib.call(context, context)
+    lib.call(context, context, ident)
+    unless lastLibName is null
+      _registry[lastLibName]= lib
+      lastLibName= null
     notify.emit 'plugin:loaded', name, lib
 
 

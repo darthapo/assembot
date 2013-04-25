@@ -11,7 +11,9 @@ resolve_path= (libpath, from)->
   else
     libpath
 
-module.exports= (assembot)->
+module.exports= (assembot, ident)->
+  # ident "Prune"
+
   {log}= assembot
 
   assembot.after 'scan', (bot)->

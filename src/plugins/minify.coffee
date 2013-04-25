@@ -24,7 +24,9 @@ do_minify= (flag, output_content, log)->
     log.info "Can't minify (install uglify-js)..."
     code:output_content, map:null
 
-module.exports= (assembot)->
+module.exports= (assembot, ident)->
+  # ident "Minify"
+
   {log}= assembot
 
   assembot.after 'build', (bot)->

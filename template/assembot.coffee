@@ -14,6 +14,7 @@ module.exports=
       plugins: [ 
         "assembot/lib/plugins/increment-version" 
         "assembot/lib/plugins/server-latency"
+        "assembot/lib/plugins/vendorize"
       ]
       autoincrement:
         enabled: yes
@@ -27,6 +28,8 @@ module.exports=
           max: 1000
           rules:
             ".(jpg|png|jpeg)": 100
+      vendorize:
+        path: './vendor'
     
     targets:
       "public/app.js":
@@ -37,6 +40,9 @@ module.exports=
         debug: isDebug
         prune: true
         minify: (if isDebug then 0 else 2)
+        vendorize:
+          before: []
+          after: []
 
       "public/app.css":
         source: "./source"

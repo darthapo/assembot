@@ -1,3 +1,8 @@
+# Version 0.2.6
+- New vendorize plugin to prefix or postfix vendor scripts to output targets
+- Updated plugin api to include an identity callback (optional, but recommended)
+
+
 # Version 0.2.5
 - New server-latency plugin, to simulate server latency in dev server
 - Updated prune plugin to build dependency list (parses coffeescript now)

@@ -11,9 +11,9 @@ assembot:
 semver= require 'semver'
 path= require 'path'
 
-console.log "Increment Version Plugin..."
+module.exports= (assembot, ident)->
+  ident "Increment Version"
 
-module.exports= (assembot)->
   {log}= assembot
 
   assembot.on 'done', (options)->
