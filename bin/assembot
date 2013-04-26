@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var src= "BEEP BOOP BLARP CLANG OORT".split(' '),
+var src= "BEEP BOOP BLARP BANG DING CLANG BEWOOT TWEET RRRRR".split(' '),
     sfx= src[Math.floor(Math.random() * src.length)],
     pkg= require('../package'),
     log= require('../lib/log'),

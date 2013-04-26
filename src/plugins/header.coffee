@@ -1,7 +1,7 @@
 
 # TODO: Add support for adding a header from file...
 module.exports= (assembot, ident)->
-  # ident "Header"
+  ident "Header", no
 
   {processor, log}= assembot
 

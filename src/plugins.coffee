@@ -48,8 +48,11 @@ init= (options, preload...)->
   initialized= yes
   false # or true if any loaded
 
-ident= (name)->
-  log.debug " =D-- #{name}"
+ident= (name, vocal=true)->
+  if vocal
+    log.info " =D-- #{name}"
+  else
+    log.debug " =D-- #{name}"
   lastLibName= name
 
 load= (name)->

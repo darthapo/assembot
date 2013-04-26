@@ -1,7 +1,7 @@
 path= require 'path'
 
 plugin= (assembot, ident)->
-  ident "Settee Templates"
+  ident "Settee Templates", no
 
   {Resource, tryRequireResolve, log, shelljs}= assembot
   {cat,test}= shelljs

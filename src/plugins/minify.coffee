@@ -25,7 +25,7 @@ do_minify= (flag, output_content, log)->
     code:output_content, map:null
 
 module.exports= (assembot, ident)->
-  # ident "Minify"
+  ident "Minify", no
 
   {log}= assembot
 

@@ -12,7 +12,7 @@ resolve_path= (libpath, from)->
     libpath
 
 module.exports= (assembot, ident)->
-  # ident "Prune"
+  ident "Prune", no
 
   {log}= assembot
 
