@@ -4,8 +4,6 @@
 
 - Add support for excluding files from build (relative to source root).
 
-- Add support for auto-incrementing package build numbers.
-
 - Add dev server proxy plugin. It would let you mount proxies to a uri. Just
   look at the paths and if any are a full URL then turn it into a proxy?
 	
@@ -195,3 +193,129 @@ assembot:
 			autoload: "main" # or true to require first 'source'
 ```
 
+
+
+### Move away from json configuration...
+
+Have an `AssemBot.(js|coffee)` file at the root of the project.
+
+```coffeescript
+
+module.exports= (AssemBot)->
+	package_info = require('package')
+	
+	AssemBot.config package_info
+	
+	# Multiple calls merge internal hash instead of replacing it.
+	AssemBot.config
+		defaultOptions: 'here'
+
+	# Supports chaining as well:
+	AssemBot
+		.config( name:'test ' )
+		.config( other: true )
+
+	AssemBot.bundle 'public/app.js',
+		source: './source'
+
+	AssemBot.bundle 'public/app.css',
+		source: './source'
+
+	AssemBot.plugin 'assembot/lib/plugins/vendorize',
+		base: './vendor'
+
+	AssemBot.on 'done', (opts)->
+		AssemBot.log "We're done here."
+
+```
+
+The driver would do some thing like this:
+
+```coffeescript
+config= require('assembot')
+
+bot= new AssemBotDriver
+
+config.call bot, bot
+```
+
+So that you could do this:
+
+```coffeescript
+
+module.exports= (AssemBot)->
+	package_info = require('package')
+	
+	@config package_info
+	
+	# Multiple calls merge internal hash instead of replacing it.
+	@config
+		defaultOptions: 'here'
+
+	# Support chaining as well:
+	@config( name:'test ' ).config( other: true )
+
+	@bundle 'public/app.js',
+		source: './source'
+		main: 'main'
+
+	@bundle 'public/app.css',
+		source: './source'
+		main: 'styles/theme.styl'
+
+	# Dev Server config
+	@server
+		port: 8080
+	@mount '/', path:'./public'
+	@mount '/api', proxy:'http://myserver.com/api'
+
+
+	# An HTML bundle would append all other HTML files in `source` folder
+	# to document in `script` template tags.
+	@bundle 'public/index.html',
+		source: './source'
+		main: 'template/boot.html'
+		type: 'text/ng-template' #for the script type
+		clean: no # to convert path seperators to hyphens, use `yes`
+
+	@plugin 'assembot/lib/plugins/vendorize',
+		base: './vendor'
+
+	@on 'done', (opts)->
+		AssemBot.log "We're done here."
+
+```
+
+---
+
+```coffeescript
+class AssemBotDriver
+	VERSION: '0.3'
+
+	config: (hash)->
+		@
+
+	plugin: (name, config)->
+		@
+
+	bundle: (output, config)->
+		@
+
+	server: (config)->
+		@
+
+	mount: (path, config)->
+		@
+
+	log: ->
+		@
+
+	on: (event, callback)->
+		@
+	
+	before: (event, callback)->
+		@
+	
+	after: (event, callback)->
+		@
+```

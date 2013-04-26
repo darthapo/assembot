@@ -6,18 +6,20 @@ var src= "BEEP BOOP BLARP CLANG OORT".split(' '),
     log= require('../lib/log'),
     cli= require('commander');
 
-console.log("\n  AssemBot! *"+ sfx +"*\n")
+function init_logging() {
+  if(cli.verbose) log.level( 2 )
+  if(cli.quiet) log.level( 0 )
+  log.info("\n  AssemBot! *"+ sfx +"*\n")
+}
 
-cli.version(pkg.version)
+cli
+  .version(pkg.version)
+  .option('-v, --verbose', 'verbose logging')
+  .option('-q, --quiet', 'minimal logging')
 
-require('../lib/cli/build')(cli, pkg)
-require('../lib/cli/init')(cli, pkg)
-require('../lib/cli/new')(cli, pkg)
-require('../lib/cli/serve')(cli, pkg)
+require('../lib/cli/build')(cli, pkg, init_logging)
+require('../lib/cli/init')(cli, pkg, init_logging)
+require('../lib/cli/new')(cli, pkg, init_logging)
+require('../lib/cli/serve')(cli, pkg, init_logging)
 
 cli.parse(process.argv)
-
-if(cli.verbose) log.level( 2 )
-if(cli.quiet) log.level( 0 )
-
-

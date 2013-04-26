@@ -4,13 +4,13 @@ server= require '../server'
 defaults= require '../defaults'
 {assembot, _, loadTargets, loadOptions}= require '../index'
 
-module.exports= (cli, pkg)->
+module.exports= (cli, pkg, init_logging)->
   cli
     .option('-p, --port <n>', 'server port', parseInt)
     .command('serve')
     .description('Starts dev server')
     .action ->
-      log.info ''
+      init_logging()
       
       bot_list= for target, options of loadTargets()
         assembot target, options

@@ -89,6 +89,9 @@ class ResourceList
 
 
 resourcelist= (filepath)->
-  ResourceList.fromPath filepath
+  if filepath?
+    ResourceList.fromPath filepath
+  else
+    new ResourceList
 
 module.exports= {Resource, ResourceList, resourcelist}

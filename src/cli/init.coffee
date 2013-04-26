@@ -7,12 +7,13 @@ path= require 'path'
 {loadOptions}= require '../index'
 # {puts, pp}= _
 
-module.exports= (cli, pkg)->
+module.exports= (cli, pkg, init_logging)->
 
   cli
     .command('init')
     .description('Creates a configuration file, if missing')
     .action ->
+      init_logging()
       localOptions= loadOptions(false)
 
       check_local_options= ->

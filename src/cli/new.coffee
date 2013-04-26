@@ -33,11 +33,12 @@ build_project= (name)->
         log.say "Done."
 
 
-module.exports= (cli, pkg)->
+module.exports= (cli, pkg, init_logging)->
   cli
     .command('new')
     .description("project directory name")
     .action((name)->
+      init_logging()
       if process.argv.length < 4
         log.say "I am an advanced Bot, yes. But my telepathic circuits aren't ready yet.\n"
         log.say "Please enter a project name!"

@@ -12,20 +12,24 @@ project_root= process.cwd()
 {Bot}= require './bot'
 
 loadedFrom= null
+loadedOptions= null
 
 loadFirstLocalPackage= (names...)->
+  return loadedOptions if loadedOptions?
   for name in names
     try
       data= require "#{ project_root }#{ path.sep }#{ name }"
       if data.assembot?
         loadedFrom= name
+        log.debug "Loaded config from", name
+        loadedOptions= data.assembot
         return data.assembot
       else
         throw new Error "No Assembot block"
     catch ex
-      log.debug "No '#{ name }.json' file found!"
+      log.trace "No '#{ name }.json' file found!"
   loadedFrom= 'defaults'
-  defaults
+  loadedOptions= defaults
 
 loadTargets= (options)->
   nfo= options ? loadFirstLocalPackage 'package', 'component', 'build', 'assembot'

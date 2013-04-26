@@ -27,15 +27,16 @@ validTarget= (filepath)->
   targetOf(filepath) isnt 'unknown'
 
 render= (resources, options, done)->
-  if resources.length is 0
-    log.info "Rendering 0 resources"
-    return done()
-  else
-    log.info "Rendering #{ resources[0].target } resources:"
   ll= log.level()
   p= -> 
     return if ll < 1
     _.print "."
+  if resources.length is 0
+    log.debug "Rendering 0 resources"
+    _.print "\n" unless ll < 1
+    return done()
+  else
+    log.debug "Rendering #{ resources[0].target } resources:"
   t= (r,cb)-> 
     notify.beforeRenderItem r
     p()

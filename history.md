@@ -1,6 +1,9 @@
 # Version 0.2.6
 - New vendorize plugin to prefix or postfix vendor scripts to output targets
 - Updated plugin api to include an identity callback (optional, but recommended)
+- Added support for verbose and minimal logging flags in CLI
+- Added support for disabling targets
+- Cleaned up CLI output for default log level
 
 
 # Version 0.2.5

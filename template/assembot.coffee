@@ -17,20 +17,18 @@ module.exports=
         "assembot/lib/plugins/vendorize"
       ]
       autoincrement:
-        enabled: yes
+        enable: yes
         target: 'package.json'
         segment: 'build' # or major, minor, patch
         when: 'after:write' 
       http:
         log: no
         latency:
-          enabled: no
+          enable: no
           max: 1000
           rules:
             ".(jpg|png|jpeg)": 100
-      vendorize:
-        path: './vendor'
-    
+
     targets:
       "public/app.js":
         source: "./source"
@@ -45,5 +43,6 @@ module.exports=
           after: []
 
       "public/app.css":
+        enable: no
         source: "./source"
         debug: isDebug

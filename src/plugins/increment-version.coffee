@@ -18,7 +18,7 @@ module.exports= (assembot, ident)->
 
   assembot.on 'done', (options)->
     return unless options.autoincrement?
-    return if options.autoincrement.enabled is false
+    return unless options.autoincrement.enabled is yes or options.autoincrement.enable is yes
     
     filepath= path.resolve path.join(process.cwd(), options.autoincrement.target)
     pinfo= require filepath

@@ -23,6 +23,7 @@ class Bot
     @options= {}
     @config(options)
     @built= no
+    @content= ""
     @returnContent= null
     @userCallbackForCompletion= null
     notify.createBot @
@@ -30,13 +31,28 @@ class Bot
   config: (options={})->
     @options= _.defaults options, @options, defaults.options # ... overkill?
     @output= path.resolve @options.output
-    @source= path.resolve @options.source
+    @source= if typeof @options.source is 'string'
+      path.resolve @options.source
+    else
+      null
     @target= processor.targetOf(@output)
     @
 
   # Send a callback to get the generated content instead of saving it to
   # the target file
   build: (callback)->
+    if @options.enable is no
+      log.debug @output, 'is disabled'
+      @built= yes
+      callback(@content) if callback?
+      return @
+    else
+      log.debug @output, 'is being built'
+    
+    if log.level() > 0
+      _.print "Building #{@options.output}"
+      # log.info "Building", @output
+
     @returnContent= callback ? null
     notify.beforeBuild @
 
@@ -74,11 +90,11 @@ class Bot
     notify.beforeWrite @
 
     if @returnContent?
-      log.info "Returning content to callback", path.relative(process.cwd(), @output)
+      log.debug "Returning content to callback", path.relative(process.cwd(), @output)
       @returnContent(@content)
       @userCallbackForCompletion?()
     else
-      log.info "Writing", path.relative(process.cwd(), @output)
+      log.debug "Writing", path.relative(process.cwd(), @output)
       @content.to @output
       notify.afterWrite @
       @built= yes

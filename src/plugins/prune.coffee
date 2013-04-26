@@ -19,7 +19,7 @@ module.exports= (assembot, ident)->
   assembot.after 'scan', (bot)->
     return if bot.target isnt 'js'
     return unless bot.options.main? and bot.options.prune
-    log.info "Building dependency list..."
+    log.debug "Building dependency list..."
     bot.resources.each (res)->
       res.dependencies= []
       if reqs= res.content.match(requireParser)
@@ -35,7 +35,7 @@ module.exports= (assembot, ident)->
   assembot.before 'render', (bot)->
     return if bot.target isnt 'js'
     return unless bot.options.main? and bot.options.prune
-    log.info "Building whitelist of modules to include..."
+    log.debug "Building whitelist of modules to include..."
     libs= []
     missing= []
 
@@ -54,11 +54,11 @@ module.exports= (assembot, ident)->
 
     add_libs bot.options.main
     libs.sort()
-    log.info " -", lib for lib in libs
+    log.debug " -", lib for lib in libs
 
     if missing.length
-      log.info "Missing references:"
-      log.info " -", lib for lib in missing
+      log.debug "Missing references:"
+      log.debug " -", lib for lib in missing
 
     bot.resources.whitelist libs
 

@@ -38,17 +38,18 @@ lastLibName= null
 
 init= (options, preload...)->
   return false if initialized
-  options.callback.call(context, context) if options.callback?
+  # options.callback.call(context, context) if options.callback?
   # Assemble a list of all the plugins to load and load 'em
   if options.plugins? and type(options.plugins) is 'array'
     preload= preload.concat options.plugins
   # These would be from the build config
   load plugin for plugin in preload
+  options.callback.call(context, context) if options.callback?
   initialized= yes
   false # or true if any loaded
 
 ident= (name)->
-  log.info " =D-- #{name}"
+  log.debug " =D-- #{name}"
   lastLibName= name
 
 load= (name)->

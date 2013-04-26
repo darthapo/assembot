@@ -20,13 +20,13 @@ module.exports= (assembot, ident)->
   assembot.on 'create:server', (server, opts={})->
     opts.http ?= {}
 
-    if opts.http.latency? and opts.http.latency.enabled
+    if opts.http.latency? and (opts.http.latency.enabled or opts.http.latency.enable)
       log.info "Activating latency simulator"
       maxAge= opts.http.latency.max ? 3000
       tests= []
       
       for test, time of opts.http.latency.rules
-        log.info " - compiling latency test", test
+        log.debug " - compiling latency test", test
         tests.push matcher:(new RegExp test), time:time, prev:0
 
       server.use (req, res, next)->
