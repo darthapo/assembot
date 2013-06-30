@@ -1,5 +1,10 @@
 # AssemBot Notes/Todos
 
+- Complete build tool:
+	- Preprocess (macros?)
+	- Assemble
+	- Minify
+
 - Support SourceMaps!
 
 - Add support for excluding files from build (relative to source root).
@@ -13,6 +18,16 @@
 			}
 		}
 
+- Macros? Hmm... Not so sure.
+
+```coffeescript
+class Test
+#ifdef DEBUG
+  url= "debug URL"
+#else
+  url= "other UTL"
+#end
+```
 
 ## Ideas
 
@@ -284,6 +299,9 @@ module.exports= (AssemBot)->
 	@on 'done', (opts)->
 		AssemBot.log "We're done here."
 
+	@macro 'now', ->
+		(new Date).toISOString()
+
 ```
 
 ---
@@ -299,12 +317,16 @@ class AssemBotDriver
 		@
 
 	bundle: (output, config)->
+		# Return this, or a Bundle class?
 		@
 
 	server: (config)->
 		@
 
 	mount: (path, config)->
+		@
+
+	macro: (name, action)->
 		@
 
 	log: ->
@@ -318,4 +340,10 @@ class AssemBotDriver
 	
 	after: (event, callback)->
 		@
+
+
+class Bundle
+	constructor: (@target, @options)->
+	set: (keyOrHash, value)->
+	get: (key)->
 ```

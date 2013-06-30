@@ -7,15 +7,15 @@ notify= require './notify'
 project_root= process.cwd()
 assembot_package= require '../package'
 project_package= try
-    require "#{project_root}#{path.sep}package"
+    require "#{project_root}#{path.sep}package.json"
   catch ex
     {}
 compontent_package= try
-    require "#{project_root}#{path.sep}component"
+    require "#{project_root}#{path.sep}component.json"
   catch ex
     {}
 build_package= try
-    require "#{project_root}#{path.sep}build"
+    require "#{project_root}#{path.sep}build.json" # 
   catch ex
     {}
 
@@ -331,7 +331,7 @@ addProcessor('css').ext('.less')
       converted err, null, opts if err?
       converted null, css, opts
 
-addProcessor('css').ext('.styl')
+addProcessor('css').ext('.styl', '.stylus')
   .requires('stylus', 'nib')
   .build (stylus, nib)->
     load_paths= [process.cwd(), path.dirname(__dirname)]
@@ -360,7 +360,7 @@ addProcessor('js').ext('.eless')
       converted err, null, opts if err?
       converted null, packager.embedded_css(css), opts
 
-addProcessor('js').ext('.estyl')
+addProcessor('js').ext('.estyl', '.estylus')
   .requires('stylus', 'nib')
   .build (stylus, nib)->
     load_paths= [process.cwd(), path.dirname(__dirname)]

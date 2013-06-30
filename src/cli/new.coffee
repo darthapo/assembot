@@ -36,7 +36,7 @@ build_project= (name)->
 module.exports= (cli, pkg, init_logging)->
   cli
     .command('new')
-    .description("project directory name")
+    .description("Creates a new project") #project directory name
     .action((name)->
       init_logging()
       if process.argv.length < 4

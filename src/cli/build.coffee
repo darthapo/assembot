@@ -1,6 +1,12 @@
+
+# console.log [__dirname, '..', 'index'].join('/')
 {assembot, _, loadTargets, loadOptions}= require '../index'
+
+
 log= require '../log'
 notify= require '../notify'
+
+
 
 module.exports= (cli, pkg, init_logging)->
 

@@ -27,12 +27,12 @@ loadFirstLocalPackage= (names...)->
       else
         throw new Error "No Assembot block"
     catch ex
-      log.trace "No '#{ name }.json' file found!"
+      log.trace "No '#{ name }' file found!"
   loadedFrom= 'defaults'
   loadedOptions= defaults
 
 loadTargets= (options)->
-  nfo= options ? loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
+  nfo= options ? loadFirstLocalPackage 'package.json', 'component.json', 'build.json', 'assembot'
   options= nfo.options ? defaults.options
   src_targets= nfo.targets ? defaults.targets
   targets= {}
@@ -42,7 +42,7 @@ loadTargets= (options)->
   targets
 
 loadOptions= (returnDefaults)->
-  nfo= loadFirstLocalPackage 'package', 'component', 'build', 'assembot'
+  nfo= loadFirstLocalPackage 'package.json', 'component.json', 'build.json', 'assembot'
   if returnDefaults is false
     if nfo is defaults
       return null

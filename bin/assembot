@@ -17,6 +17,7 @@ cli
   .option('-v, --verbose', 'verbose logging')
   .option('-q, --quiet', 'minimal logging')
 
+
 require('../lib/cli/build')(cli, pkg, init_logging)
 require('../lib/cli/init')(cli, pkg, init_logging)
 require('../lib/cli/new')(cli, pkg, init_logging)
